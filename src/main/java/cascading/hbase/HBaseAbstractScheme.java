@@ -5,7 +5,6 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import cascading.hbase.helper.TableInputFormat;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -24,16 +23,16 @@ public abstract class HBaseAbstractScheme extends
     protected Fields keyField;
 
     protected void validate() {
-	if (keyField.size() != 1)
+      if (keyField.size() != 1)
 	    throw new IllegalArgumentException(
 		    "may only have one key field, found: " + keyField.print());
     }
 
     protected void setSourceSink(Fields keyFields, Fields... columnFields) {
-	Fields allFields = Fields.join(keyFields, Fields.join(columnFields)); // prepend
+      Fields allFields = Fields.join(keyFields, Fields.join(columnFields)); // prepend
 
-	setSourceFields(allFields);
-	setSinkFields(allFields);
+      setSourceFields(allFields);
+      setSinkFields(allFields);
     }
 
     protected void setSourceInitFields(JobConf conf, String columns) {
@@ -81,6 +80,4 @@ public abstract class HBaseAbstractScheme extends
         SourceCall<Object[], RecordReader> sourceCall) {
       sourceCall.setContext(null);
     }
-
-
 }

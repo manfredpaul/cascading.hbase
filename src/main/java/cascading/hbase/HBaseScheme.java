@@ -132,9 +132,11 @@ public class HBaseScheme extends HBaseAbstractScheme {
 			Fields fields = this.valueFields[i];
 			for (int k = 0; k < fields.size(); k++) {
 				String fieldName = (String) fields.get(k);
+				
 				byte[] fieldNameBytes = Bytes.toBytes(fieldName);
 				byte[] cellValue = row
 						.getValue(familyNameBytes, fieldNameBytes);
+				
 				result.add(cellValue);
 			}
 		}
@@ -179,7 +181,7 @@ public class HBaseScheme extends HBaseAbstractScheme {
 					System.arraycopy(dataOutputBuffer.getData(), 0,
 							objectInBytes, 0, dataOutputBuffer.getLength());
 				} else {
-					objectInBytes = Bytes.toBytes(tuple.toString());
+					objectInBytes = Bytes.toBytes(object.toString());
 				}
 
 				if (null == objectInBytes) {

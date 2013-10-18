@@ -26,6 +26,7 @@ abstract public class HBaseTests {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+
     utility = new HBaseTestingUtility();
     utility.startMiniCluster( 1 );
     configuration = utility.getConfiguration();
@@ -53,6 +54,7 @@ abstract public class HBaseTests {
   public FlowConnector createHadoopFlowConnector(Map<Object, Object> props) {
   Map<Object, Object> finalProperties = Maps.newHashMap(props);
   finalProperties.put( HConstants.ZOOKEEPER_CLIENT_PORT, utility.getZkCluster().getClientPort() );
+  
   return new HadoopFlowConnector(finalProperties);
 }
 

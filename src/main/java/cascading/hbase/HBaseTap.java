@@ -21,13 +21,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
+
 import cascading.hbase.helper.TableInputFormat;
+
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -63,6 +66,8 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 	private String tableName;
 
 	private int uniqueId;
+	
+	private String quorum;
 
 	/**
 	 * Constructor HBaseTap creates a new HBaseTap instance.
@@ -120,11 +125,32 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 	 */
 	public HBaseTap(String tableName, HBaseAbstractScheme HBaseFullScheme,
 			SinkMode sinkMode, int uniqueId) {
-		super(HBaseFullScheme, sinkMode);
-		this.tableName = tableName;
-		this.uniqueId = uniqueId;
+		this(null, tableName, HBaseFullScheme, sinkMode, uniqueId);
 	}
 
+	 /**
+   * Constructor HBaseTap creates a new HBaseTap instance.
+   * 
+   * @param quorum
+   *         the zookeeper quorum.
+   * @param tableName
+   *            of type String
+   * @param HBaseFullScheme
+   *            of type HBaseFullScheme
+   * @param sinkMode
+   *            of type SinkMode
+   * @param uniqueId
+   *            the uniqueId (0 if no id given)
+   */
+  public HBaseTap(String quorum, String tableName, HBaseAbstractScheme HBaseFullScheme,
+      SinkMode sinkMode, int uniqueId) {
+    super(HBaseFullScheme, sinkMode);
+    this.quorum = quorum;
+    this.tableName = tableName;
+    this.uniqueId = uniqueId;
+  }
+	
+	
 	public Path getPath() {
 		return new Path(SCHEME + "://" + tableName.replaceAll(":", "_"));
 	}
@@ -146,79 +172,14 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
 	private HBaseAdmin getHBaseAdmin(JobConf conf)
 			throws MasterNotRunningException, ZooKeeperConnectionException {
+			if ( quorum != null )
+	      conf.set( HConstants.ZOOKEEPER_QUORUM, quorum );
 		if (hBaseAdmin == null)
 			hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create(conf));
 		return hBaseAdmin;
 	}
 
-	public static HTable openTable(String tableName,
-			String... coulmnFamilyArray) throws IOException {
-		Configuration config = HBaseConfiguration.create();
 
-		HBaseAdmin hbase = new HBaseAdmin(config);
-		byte[] tableNameByte = tableName.getBytes();
-
-		if (hbase.tableExists(tableNameByte)) {
-			// table exists
-			LOG.debug("Table: " + tableName + " already exists!");
-			if (hbase.isTableEnabled(tableNameByte)) {
-				// table enabled
-
-				HTable hTable = new HTable(config, tableNameByte);
-
-				HColumnDescriptor[] hColumnDescriptorList = hTable
-						.getTableDescriptor().getColumnFamilies();
-				List<String> existColumnNamesList = new ArrayList<String>();
-				for (HColumnDescriptor hColumnDescriptor : hColumnDescriptorList) {
-					existColumnNamesList.add(hColumnDescriptor
-							.getNameAsString());
-				}
-
-				// checking if all the column family are in the table, adding it
-				// if not.
-
-				List<String> missingColumnFamilies = new ArrayList<String>();
-				for (String coulmnFamily : coulmnFamilyArray) {
-					if (!existColumnNamesList.contains(coulmnFamily)) {
-						LOG.warn(coulmnFamily + " does not exist in "
-								+ tableName);
-						missingColumnFamilies.add(coulmnFamily);
-					}
-				}
-
-				if (!missingColumnFamilies.isEmpty()) {
-					hbase.disableTable(tableNameByte);
-					for (String coulmnFamily : missingColumnFamilies) {
-						hbase.addColumn(tableNameByte, new HColumnDescriptor(
-								coulmnFamily.getBytes()));
-						LOG.info(coulmnFamily + " added to " + tableName);
-					}
-					hbase.enableTable(tableNameByte);
-				}
-
-				return hTable;
-			}
-
-			// table exists but disabled
-			LOG.info("Table: " + tableName
-					+ " exists but disabled, deleting the table.");
-			hbase.deleteTable(tableNameByte);
-		}
-
-		// creating a new table
-		HTableDescriptor hTableDescriptor = new HTableDescriptor(tableNameByte);
-		for (String coulmnFamily : coulmnFamilyArray) {
-			HColumnDescriptor meta = new HColumnDescriptor(
-					coulmnFamily.getBytes());
-			hTableDescriptor.addFamily(meta);
-		}
-
-		hbase.createTable(hTableDescriptor);
-		LOG.info("New hBase table created with name: " + tableName);
-
-		return new HTable(config, tableNameByte);
-
-	}
 
 	public boolean resourceExists(JobConf conf) throws IOException {
 		return getHBaseAdmin(conf).tableExists(tableName);
@@ -232,7 +193,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 	@Override
 	public void sinkConfInit(FlowProcess<JobConf> flowProcess, JobConf conf) {
 		LOG.debug("sinking to table: {}", tableName);
-
 		// TODO: next 5 lines were added, and commented area was taken out
 		// hbase table wasn't being created during tests... wtf?
 		try {
@@ -265,6 +225,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 		LOG.debug("sourcing from table: {}", tableName);
 		FileInputFormat.addInputPaths(conf, tableName);
         conf.set(TableInputFormat.INPUT_TABLE, tableName);
+    
 		super.sourceConfInit(flowProcess, conf);
 	}
 
@@ -343,7 +304,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 			return true;
 
 		} catch (Exception e) {
-			e.printStackTrace();
+		  LOG.error( "error while deleting table {} {}", tableName, e );
 			return false;
 		}
 	}
