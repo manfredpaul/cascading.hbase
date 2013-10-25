@@ -14,27 +14,32 @@ Welcome
  HBase is the Hadoop database. Its an open-source, distributed,
  column-oriented store modeled after the Google paper on Bigtable.
 
-   http://hadoop.apache.org/hbase/
+   http://hbase.apache.org/
 
 History
 
- This version has roots from the original Cascading.HBase effort by Chris Wensel, and then modified by Kurt Harriger to add the dynamic scheme, putting tuple fields into HBase columns, and vice versa.  Twitter's Maple project also has roots from the original Cascading.HBase project, but is an update to Cascading 2.0.  Maple lacks the dynamic scheme, so this project basically combines everything before it and updates to Cascading 2.0.x and HBase 0.94.x.
+ This version has roots from the original Cascading.HBase effort by Chris
+ Wensel, and then modified by Kurt Harriger to add the dynamic scheme, putting
+ tuple fields into HBase columns, and vice versa.  Twitter's Maple project also
+ has roots from the original Cascading.HBase project, but is an update to
+ Cascading 2.0.  Maple lacks the dynamic scheme, so this project basically
+ combines everything before it and updates to Cascading 2.2.x and HBase 0.94.x.
 
 Building
 
- This version could be built by using apache maven:
- mvn package
+ This version could be built by using gradle:
+     
+     > gradle build
 
 If the tests are failing on your machine, do a `umask 022` before running maven.
 
 Using
 
-  The cascading-hbase.jar file should be added to the "lib"
-  directory of your Hadoop application jar file along with all
-  Cascading dependencies.
+  The cascading-hbase.jar file should be added to the "lib" directory of your
+  Hadoop application jar file along with all Cascading dependencies.
 
-  See the TestHBaseDynamic and TestHBaseStatic unit tests for sample code on using the HBase taps,
-  schemes and helpers in your Cascading application.
+  See the HBaseDynamicTest and HBaseStaticTest unit tests for sample code on
+  using the HBase taps, schemes and helpers in your Cascading application.
 
 License
 
@@ -47,3 +52,6 @@ License
   The copyright holder grants any entity the right
   to use this work for any purpose, without any
   conditions, unless such conditions are required by law.
+
+
+  Portions of this code have 

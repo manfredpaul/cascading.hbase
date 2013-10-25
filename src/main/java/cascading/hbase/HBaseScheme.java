@@ -136,8 +136,8 @@ public class HBaseScheme extends HBaseAbstractScheme {
 				byte[] fieldNameBytes = Bytes.toBytes(fieldName);
 				byte[] cellValue = row
 						.getValue(familyNameBytes, fieldNameBytes);
-				
-				result.add(cellValue);
+				//XXX
+				result.add(Bytes.toString( cellValue ));
 			}
 		}
 		sourceCall.getIncomingEntry().setTuple(result);
@@ -145,12 +145,6 @@ public class HBaseScheme extends HBaseAbstractScheme {
 		return true;
 	}
 
-	private byte[][] getFieldsBytes() {
-		if (fields == null)
-			fields = makeBytes(this.familyNames, this.valueFields);
-
-		return fields;
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override

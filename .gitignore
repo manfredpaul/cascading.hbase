@@ -11,3 +11,6 @@ target
 .project
 repo@conjars.org
 .lein-failures
+build
+.gradle
+

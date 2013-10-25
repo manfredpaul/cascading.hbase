@@ -45,7 +45,7 @@ import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
 
 @RunWith(org.junit.runners.JUnit4.class)
-public class TestHBaseDynamic extends HBaseTests {
+public class HBaseDynamicTest extends HBaseTests {
 
 	private static final String TEST_TABLE = "testTable";
 

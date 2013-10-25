@@ -67,8 +67,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
 	private int uniqueId;
 	
-	private String quorum;
-
 	/**
 	 * Constructor HBaseTap creates a new HBaseTap instance.
 	 *
@@ -111,28 +109,9 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 		this(tableName, HBaseFullScheme, sinkMode, 0);
 	}
 
-	/**
-	 * Constructor HBaseTap creates a new HBaseTap instance.
-	 *
-	 * @param tableName
-	 *            of type String
-	 * @param HBaseFullScheme
-	 *            of type HBaseFullScheme
-	 * @param sinkMode
-	 *            of type SinkMode
-	 * @param uniqueId
-	 *            the uniqueId (0 if no id given)
-	 */
-	public HBaseTap(String tableName, HBaseAbstractScheme HBaseFullScheme,
-			SinkMode sinkMode, int uniqueId) {
-		this(null, tableName, HBaseFullScheme, sinkMode, uniqueId);
-	}
-
 	 /**
    * Constructor HBaseTap creates a new HBaseTap instance.
    * 
-   * @param quorum
-   *         the zookeeper quorum.
    * @param tableName
    *            of type String
    * @param HBaseFullScheme
@@ -142,10 +121,9 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
    * @param uniqueId
    *            the uniqueId (0 if no id given)
    */
-  public HBaseTap(String quorum, String tableName, HBaseAbstractScheme HBaseFullScheme,
+  public HBaseTap(String tableName, HBaseAbstractScheme HBaseFullScheme,
       SinkMode sinkMode, int uniqueId) {
     super(HBaseFullScheme, sinkMode);
-    this.quorum = quorum;
     this.tableName = tableName;
     this.uniqueId = uniqueId;
   }
@@ -172,8 +150,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
 	private HBaseAdmin getHBaseAdmin(JobConf conf)
 			throws MasterNotRunningException, ZooKeeperConnectionException {
-			if ( quorum != null )
-	      conf.set( HConstants.ZOOKEEPER_QUORUM, quorum );
 		if (hBaseAdmin == null)
 			hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create(conf));
 		return hBaseAdmin;

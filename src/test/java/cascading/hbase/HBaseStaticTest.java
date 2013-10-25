@@ -25,21 +25,21 @@ import cascading.tap.hadoop.Lfs;
 import cascading.tuple.Fields;
 
 @SuppressWarnings("rawtypes")
-public class TestHBaseStatic extends HBaseTestsStaticScheme {
+public class HBaseStaticTest extends HBaseTestsStaticScheme {
 
   String inputFile = "src/test/resources/data/small.txt";
 
   @AfterClass
   public static void tearDown() throws IOException
     {
-    FileUtils.deleteDirectory( new File("target/test/output") );
+    FileUtils.deleteDirectory( new File("build/test/output") );
     }
 
 	@Test
 	public void testHBaseMultiFamily() throws IOException {
 
 		Properties properties = new Properties();
-		AppProps.setApplicationJarClass(properties, TestHBaseStatic.class);
+		AppProps.setApplicationJarClass(properties, HBaseStaticTest.class);
 
 		deleteTable(configuration, "multitable");
 
@@ -66,7 +66,7 @@ public class TestHBaseStatic extends HBaseTestsStaticScheme {
 		verifySink(parseFlow, 5);
 
 		// create flow to read from hbase and save to local file
-		Tap sink = new Lfs(new TextLine(), "target/test/output/multifamily",
+		Tap sink = new Lfs(new TextLine(), "build/test/output/multifamily",
 				SinkMode.REPLACE);
 
 		Pipe copyPipe = new Each("read", new Identity());
@@ -106,7 +106,7 @@ public class TestHBaseStatic extends HBaseTestsStaticScheme {
 		Flow parseFlow = flowConnector.connect(source, hBaseTap, parsePipe);
 
 		// create flow to read from hbase and save to local file
-		Tap sink = new Lfs(new TextLine(), "target/test/output/multifamilycascade",
+		Tap sink = new Lfs(new TextLine(), "build/test/output/multifamilycascade",
 				SinkMode.KEEP);
 
 		Pipe copyPipe = new Each("read", new Identity());
