@@ -90,8 +90,7 @@ dependencies {
   testCompile group: 'junit-addons', name: 'junit-addons', version: '1.4'
   testCompile group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
   testCompile group: 'org.apache.hbase', name: 'hbase', classifier: 'tests', version: hbaseVersion
-  testCompile group: 'org.apache.hadoop', name: 'hadoop-test', version:
-  hadoopVersion
+  testCompile group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion
 }
 
 task sourcesJar( type: Jar, dependsOn: classes ) {

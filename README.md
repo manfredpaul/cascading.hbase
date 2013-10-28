@@ -1,0 +1,144 @@
+# Welcome #
+
+ This is the Cascading.HBase module.
+
+ It provides support for reading/writing data to/from an HBase
+ cluster when bound to a Cascading data processing flow.
+
+ Cascading is a feature rich API for defining and executing complex,
+ scale-free, and fault tolerant data processing workflows on a Hadoop
+ cluster. It can be found at the following location:
+
+   http://www.cascading.org/
+
+ HBase is the Hadoop database. Its an open-source, distributed,
+ column-oriented store modeled after the Google paper on Bigtable.
+
+   http://hbase.apache.org/
+
+# History #
+
+ This version has roots from the original Cascading.HBase effort by Chris
+ Wensel, and then modified by Kurt Harriger to add the dynamic scheme, putting
+ tuple fields into HBase columns, and vice versa.  Twitter's Maple project also
+ has roots from the original Cascading.HBase project, but is an update to
+ Cascading 2.0.  Maple lacks the dynamic scheme, so this project basically
+ combines everything before it and updates to Cascading 2.2.x and HBase 0.94.x.
+ It also adds support for lingual.
+
+# Building #
+
+ This version could be built by using gradle:
+     
+     > gradle build
+
+If the tests are failing on your machine, do a `umask 022` before starting the
+build.
+
+# Using #
+
+## In cascading applications ##
+
+  The cascading-hbase.jar file should be added to the "lib" directory of your
+  Hadoop application jar file along with all Cascading dependencies.
+
+  The jar files are deployed on [conjars](http://conjars.org/cascading/cascading-hbase)
+
+  See the HBaseDynamicTest and HBaseStaticTest unit tests for sample code on
+  using the HBase taps, schemes and helpers in your Cascading application.
+
+## In lingual ##
+
+This project also creates a lingual compliant provider jar, which can be used to
+talk to HBase via standard SQL. Below can you find a possible session with
+lingual and HBase.
+
+    # the hbase provider can only be used with the hadoop platform
+    > export LINGUAL_PLATFORM=hadoop
+    
+    # tell lingual, where the namenode, the jobtracker and the hbase zk quorum are
+    > export LINGUAL_CONFIG=fs.default.name=hdfs://master.local:9000,mapred.job.tracker=master.local:9001,hbase.zookeeper.quorum=hadoop1.local
+
+
+First we intall the provider, by dowlaoding it from conjars.
+
+    > lingual catalog --provider --add cascading:cascading-hbase:2.2.0-+:provider
+
+Next we are creating a new schema called `working` to work with.
+
+    > lingual catalog --schema working --add
+
+Now we add the `hbase` format from the `hbase` provider to the schema. We tell
+the provider, which column family, we want to work with. In this case, the
+family is called `cf`. Please note that there is a strict one-to-one mapping
+from HBase column families to lingual tables. If you want to access multiple
+column families in HBase from lingual, you can map them to different tables.
+
+    > lingual catalog --schema working --format hbase --add  --properties=family=cf --provider hbase
+
+We register a new stereotype called `hbtest` with four fields: `ROWKEY`, `A`,
+`B` and `C` all of type `string`. These are the fields that will be used by the
+HBaseTap. The first field is always used as the rowkey in the table. All
+subsequent fields are used as qualifiers in a given column family (see above).
+
+    > lingual catalog --schema working --stereotype hbtest -add --columns ROWKEY,A,B,C --types string,string,string,string
+
+Now we add the `hbase` protocol to the schema.
+   
+    > lingual catalog --schema working --protocol hbase --add --provider hbase
+
+Finally we create a lingua table called `hb` with the hbase provider. The table
+is called `cascading` in the HBase instance, so we use that as the identifier.
+
+    > lingual catalog --schema working --table hb --stereotype hbtest -add "cascading" --protocol hbase --format hbase --provider hbase
+
+Now we can talk to the HBase table from lingual:
+
+    > lingual shell
+    (lingual)> select * from "working"."hb";
+    +---------+----+----+----+
+    | ROWKEY  | A  | B  | C  |
+    +---------+----+----+----+
+    +---------+----+----+----+
+
+    (lingual)> insert into "working"."hb" values ('42', 'one', 'two', 'three');
+    +-----------+
+    | ROWCOUNT  |
+    +-----------+
+    | 1         |
+    +-----------+
+
+    (lingual)> select * from "working"."hb";
+    +---------+------+------+--------+
+    | ROWKEY  |  A   |  B   |   C    |
+    +---------+------+------+--------+
+    | 42      | one  | two  | three  |
+    +---------+------+------+--------+
+
+
+# License #
+
+  Copyright (c) 2009 Concurrent, Inc.
+
+  This work has been released into the public domain by the copyright holder,
+  unless otherwise noted. This applies worldwide.
+
+  In case this is not legally possible:
+  The copyright holder grants any entity the right
+  to use this work for any purpose, without any
+  conditions, unless such conditions are required by law.
+
+  The code contains contributions from the following authors:
+  - Andre Kelpe
+  - Brad Anderson
+  - Chris K Wensel
+  - Dave White
+  - Dru Jensen
+  - Jean-Daniel Cryans
+  - JingYu Huang
+  - Ken MacInnis
+  - Kurt Harriger
+  - matan
+  - Ryan Rawson
+  - Soren Macbet
+
