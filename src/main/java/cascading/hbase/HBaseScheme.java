@@ -13,12 +13,12 @@
 package cascading.hbase;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashSet;
 
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Writable;
@@ -36,11 +36,12 @@ import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import cascading.tuple.type.CoercibleType;
 import cascading.util.Util;
 
 /**
  * The HBaseScheme class is a {@link Scheme} subclass. It is used in conjunction
- * with the {@HBaseTap} to allow for the reading and writing of data
+ * with the {@link HBaseTap} to allow for the reading and writing of data
  * to and from a HBase cluster.
  *
  * @see HBaseTap
@@ -136,8 +137,13 @@ public class HBaseScheme extends HBaseAbstractScheme {
 				byte[] fieldNameBytes = Bytes.toBytes(fieldName);
 				byte[] cellValue = row
 						.getValue(familyNameBytes, fieldNameBytes);
-				//XXX
-				result.add(Bytes.toString( cellValue ));
+
+        Object deserialized = Bytes.toString( cellValue );
+        Type type = fields.getType( k );
+        if( type instanceof CoercibleType )
+          deserialized = ( (CoercibleType<?>) type ).canonical( deserialized );
+
+        result.add( deserialized );
 			}
 		}
 		sourceCall.getIncomingEntry().setTuple(result);
@@ -161,7 +167,8 @@ public class HBaseScheme extends HBaseAbstractScheme {
 			DataOutputBuffer dataOutputBuffer = new DataOutputBuffer();
 
 			for (int j = 0; j < values.getFields().size(); j++) {
-				Fields fields = values.getFields();
+				String fieldName = values.getFields().get(j).toString();
+				Type fieldType = values.getFields().getType( j );
 				Tuple tuple = values.getTuple();
 
 				Object object = tuple.getObject(j);
@@ -174,7 +181,12 @@ public class HBaseScheme extends HBaseAbstractScheme {
 					objectInBytes = new byte[dataOutputBuffer.getLength()];
 					System.arraycopy(dataOutputBuffer.getData(), 0,
 							objectInBytes, 0, dataOutputBuffer.getLength());
-				} else {
+				} 
+				else if (fieldType instanceof CoercibleType){
+				   CoercibleType<?> coercible = (CoercibleType<?>) fieldType;
+				   objectInBytes = Bytes.toBytes(coercible.coerce( object, String.class ).toString());
+				}
+				else {
 					objectInBytes = Bytes.toBytes(object.toString());
 				}
 
@@ -183,7 +195,7 @@ public class HBaseScheme extends HBaseAbstractScheme {
 				}
 
 				put.add(Bytes.toBytes(familyNames[i]),
-						Bytes.toBytes(fields.get(j).toString()), objectInBytes);
+						Bytes.toBytes(fieldName), objectInBytes);
 			}
 		}
 

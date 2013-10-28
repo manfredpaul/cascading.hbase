@@ -13,20 +13,15 @@
 package cascading.hbase;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 
 import cascading.hbase.helper.TableInputFormat;
@@ -47,7 +42,7 @@ import cascading.tuple.TupleEntryIterator;
 
 /**
  * The HBaseTap class is a {@link Tap} subclass. It is used in conjunction with
- * the {@HBaseFullScheme} to allow for the reading and writing
+ * the {@link HBaseScheme} to allow for the reading and writing
  * of data to and from a HBase cluster.
  */
 @SuppressWarnings("serial")
