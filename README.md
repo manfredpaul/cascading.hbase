@@ -115,6 +115,19 @@ Now we can talk to the HBase table from lingual:
     | 42      | one  | two  | three  |
     +---------+------+------+--------+
 
+### Types, Lingual, and HBase
+
+The lingual provider takes a pragmatic approach to types, when it reads and
+writes to HBase. Since HBase has no type enforcement and there is no reliable
+way to guess the types, the provider converts every field to a `String` before
+storing it. The type conversion is done viia the types on the Fields instance.
+If the type is a `CoercibleType`, the coerce method is called.  When the data is
+read back, the is converted to its canonical representation, before it handed
+back to linugal. This makes sure that data written from lingual can be read back
+in lingual.
+
+Other systems interacting with the same table need to take his behaviour into
+account.
 
 # License #
 
