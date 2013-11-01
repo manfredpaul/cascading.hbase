@@ -115,6 +115,25 @@ Now we can talk to the HBase table from lingual:
     | 42      | one  | two  | three  |
     +---------+------+------+--------+
 
+
+### Limitations ###
+
+As explained above only qualifiers from one column family can be mapped to the
+same table in lingual. You can still map multiple column families in the same
+HBase table to multiple tables in lingual. 
+
+Next to that, there is currently a limitation related to the casing of the
+qualifiers in a column family. Since lingual uses SQL semantics for column
+names, it tries to normalize them and uses upper case names. You can use
+lowercase names as well, but you might run into problems, when you do a 
+`select * from table` style query. This limitation might be removed in future versions
+of lingual and therefore in the HBase provider.  The easiest way to work around
+this limitation is using uppercase qualifiers.
+
+Last but not least keep in mind that this provider gives you a SQL interface to
+HBase, but this interface is not meant for realtime quries. In the spirit of
+linugal it is meant as a SQL driven way for batch processing.
+
 ### Types, Lingual, and HBase
 
 The lingual provider takes a pragmatic approach to types, when it reads and
