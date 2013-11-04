@@ -174,7 +174,10 @@ public class HBaseScheme extends HBaseAbstractScheme {
 				Object object = tuple.getObject(j);
 				byte[] objectInBytes;
 
-				if (object instanceof Writable) {
+				if (object == null)
+				  objectInBytes = HConstants.EMPTY_BYTE_ARRAY;
+
+				else if (object instanceof Writable) {
 					Writable writable = (Writable) object;
 					dataOutputBuffer.reset();
 					writable.write(dataOutputBuffer);
@@ -189,11 +192,6 @@ public class HBaseScheme extends HBaseAbstractScheme {
 				else {
 					objectInBytes = Bytes.toBytes(object.toString());
 				}
-
-				if (null == objectInBytes) {
-					objectInBytes = HConstants.EMPTY_BYTE_ARRAY;
-				}
-
 				put.add(Bytes.toBytes(familyNames[i]),
 						Bytes.toBytes(fieldName), objectInBytes);
 			}
