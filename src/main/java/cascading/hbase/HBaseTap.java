@@ -145,6 +145,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector> {
 
 	private HBaseAdmin getHBaseAdmin(JobConf conf)
 			throws MasterNotRunningException, ZooKeeperConnectionException {
+		Thread.currentThread().setContextClassLoader(HBaseConfiguration.class.getClassLoader());
 		if (hBaseAdmin == null)
 			hBaseAdmin = new HBaseAdmin(HBaseConfiguration.create(conf));
 		return hBaseAdmin;
