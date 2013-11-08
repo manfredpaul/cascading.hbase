@@ -31,7 +31,7 @@ apply plugin: 'propdeps-eclipse'
 apply plugin: 'propdeps-maven'
 
 ext.cascadingVersion = '2.2.0'
-ext.hbaseVersion = '0.94.12'
+ext.hbaseVersion = '0.94.13'
 ext.hadoopVersion = '1.2.1'
 
 apply from: "etc/properties.gradle"
