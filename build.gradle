@@ -30,7 +30,7 @@ apply plugin: 'propdeps-idea'
 apply plugin: 'propdeps-eclipse'
 apply plugin: 'propdeps-maven'
 
-ext.cascadingVersion = '2.2.0'
+ext.cascadingVersion = '2.5.0-+'
 ext.hbaseVersion = '0.94.13'
 ext.hadoopVersion = '1.2.1'
 
