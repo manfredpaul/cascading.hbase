@@ -20,13 +20,13 @@
 
 package cascading.hbase.helper;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link Utils}.
- * 
  */
 public class UtilsTest
   {
@@ -53,23 +53,23 @@ public class UtilsTest
     {
     assertFalse( Utils.isNullOrEmpty( "something" ) );
     }
-  
-  @Test(expected=IllegalArgumentException.class)
+
+  @Test(expected = IllegalArgumentException.class)
   public void testThrowIfNullOrEmptyWithNull()
     {
     Utils.throwIfNullOrEmpty( null, "foo cannot be null" );
     }
-  
-  @Test(expected=IllegalArgumentException.class)
+
+  @Test(expected = IllegalArgumentException.class)
   public void testThrowIfNullOrEmptyWithEmpty()
     {
     Utils.throwIfNullOrEmpty( "", "foo cannot be null" );
     }
-  
+
   @Test
   public void testThrowIfNullOrEmptyWithContent()
     {
     Utils.throwIfNullOrEmpty( "test", "foo cannot be null" );
     }
-  
+
   }

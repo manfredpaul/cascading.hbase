@@ -1,24 +1,10 @@
 package cascading.hbase;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.NavigableMap;
 import java.util.Properties;
-
-import junitx.framework.FileAssert;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mortbay.log.Log;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -43,186 +29,213 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleEntryIterator;
+import junitx.framework.FileAssert;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mortbay.log.Log;
+
+import static org.junit.Assert.assertTrue;
 
 @RunWith(org.junit.runners.JUnit4.class)
-public class HBaseDynamicTest extends HBaseTests {
+public class HBaseDynamicTest extends HBaseTests
+  {
 
-	private static final String TEST_TABLE = "testTable";
+  private static final String TEST_TABLE = "testTable";
 
-	private static final String TEST_CF = "testCF";
+  private static final String TEST_CF = "testCF";
 
-	private static final String inputDataFile = "src/test/resources/data/small.txt";
+  private static final String inputDataFile = "src/test/resources/data/small.txt";
 
-	private static void fillTable(Configuration configuration)
-			throws IOException {
-		deleteTable(configuration, TEST_TABLE);
+  private static void fillTable( Configuration configuration )
+    throws IOException
+    {
+    deleteTable( configuration, TEST_TABLE );
 
-		HTable table = HBaseUtils.openTable(configuration, TEST_TABLE, TEST_CF);
+    HTable table = HBaseUtils.openTable( configuration, TEST_TABLE, TEST_CF );
 
-		// HTable table =
-		// hBaseTestingUtility.createTable(Bytes.toBytes(TEST_TABLE),
-		// Bytes.toBytes(TEST_CF));
+    // HTable table =
+    // hBaseTestingUtility.createTable(Bytes.toBytes(TEST_TABLE),
+    // Bytes.toBytes(TEST_CF));
 
-		Put put1 = new Put(Bytes.toBytes("row_1"));
-		put1.add(Bytes.toBytes(TEST_CF), Bytes.toBytes("c_1"), Bytes.toBytes(1));
+    Put put1 = new Put( Bytes.toBytes( "row_1" ) );
+    put1.add( Bytes.toBytes( TEST_CF ), Bytes.toBytes( "c_1" ), Bytes.toBytes( 1 ) );
 
-		Put put2 = new Put(Bytes.toBytes("row_2"));
-		put2.add(Bytes.toBytes(TEST_CF), Bytes.toBytes("c_2"), Bytes.toBytes(2));
+    Put put2 = new Put( Bytes.toBytes( "row_2" ) );
+    put2.add( Bytes.toBytes( TEST_CF ), Bytes.toBytes( "c_2" ), Bytes.toBytes( 2 ) );
 
-		table.put(put1);
-		table.put(put2);
-		Log.info("created table: {} with cf: {}", TEST_TABLE, TEST_CF);
-	}
+    table.put( put1 );
+    table.put( put2 );
+    Log.info( "created table: {} with cf: {}", TEST_TABLE, TEST_CF );
+    }
 
-	@SuppressWarnings("serial")
-	static public class StringAppender extends BaseOperation<Void> implements
-			Function<Void> {
+  @SuppressWarnings("serial")
+  static public class StringAppender extends BaseOperation<Void> implements
+    Function<Void>
+    {
 
-		public StringAppender(Fields declaredFields) {
-			super(declaredFields);
+    public StringAppender( Fields declaredFields )
+      {
+      super( declaredFields );
 
-		}
+      }
 
-		@Override
-		public void operate(FlowProcess flowProcess,
-				FunctionCall<Void> functionCall) {
-			StringBuffer stringBuffer = new StringBuffer();
-			for (int i = 0; i < functionCall.getArgumentFields().size(); i++) {
-				stringBuffer.append(functionCall.getArgumentFields().get(i)
-						.toString()
-						+ ":"
-						+ functionCall.getArguments().getString(
-								functionCall.getArgumentFields().get(i)) + " ");
-			}
+    @Override
+    public void operate( FlowProcess flowProcess,
+                         FunctionCall<Void> functionCall )
+      {
+      StringBuffer stringBuffer = new StringBuffer();
+      for( int i = 0; i < functionCall.getArgumentFields().size(); i++ )
+        {
+        stringBuffer.append( functionCall.getArgumentFields().get( i )
+          .toString()
+          + ":"
+          + functionCall.getArguments().getString(
+          functionCall.getArgumentFields().get( i ) ) + " " );
+        }
 
-			functionCall.getOutputCollector().add(
-					new Tuple(stringBuffer.toString()));
+      functionCall.getOutputCollector().add(
+        new Tuple( stringBuffer.toString() ) );
 
-		}
-
-	}
-
-	@Before
-	public void beforeInstance() throws IOException {
-		fillTable(configuration);
-	}
-
-	@Test
-	public void testRead() throws SecurityException, NoSuchMethodException {
-
-		Tap source = new HBaseTap(TEST_TABLE, new HBaseDynamicScheme(
-				new Fields("row"), new Fields("value"), TEST_CF));
-		Tap sink = new Lfs(new TextLine(new Fields("line")),
-				"build/test/hbasedynamicread", SinkMode.REPLACE);
-
-		Pipe pipe = new Pipe("hbasedynamicschemepipe");
-
-		pipe = new Each(pipe, new Fields("row", "value"), new HBaseMapToTuples(
-				new Fields("row", "cf", "column", "value"), new Fields("row",
-						"value")));
-		pipe = new Each(pipe, new StringAppender(new Fields("line")));
-
-		Flow flow = createHadoopFlowConnector().connect(source, sink, pipe);
-
-		flow.complete();
-
-		FileAssert.assertBinaryEquals(new File(
-				"src/test/resources/data/fileDynamicExpected"), new File(
-				"build/test/hbasedynamicread/part-00000"));
-
-	}
-
-    @Test
-    public void testReadFiltered() throws SecurityException, NoSuchMethodException, IOException {
-        Properties properties = new Properties();
-        Scan s = new Scan();
-        s.setStartRow(Bytes.toBytes("row_1"));
-        s.setStopRow(Bytes.toBytes("row_1"));
-        properties.setProperty(TableInputFormat.SCAN, TableInputFormat.convertScanToString(s));
-        FlowConnector conn = createHadoopFlowConnector( properties );
-        Tap source = new HBaseTap(TEST_TABLE, new HBaseDynamicScheme(
-                new Fields("row"), new Fields("value"), TEST_CF));
-        Tap sink = new Lfs(new TextLine(new Fields("line")),
-                "build/test/hbasedynamicreadfiltered", SinkMode.REPLACE);
-
-        Pipe pipe = new Pipe("hbasedynamicschemepipe");
-
-        pipe = new Each(pipe, new Fields("row", "value"), new HBaseMapToTuples(
-                new Fields("row", "cf", "column", "value"), new Fields("row",
-                "value")));
-        pipe = new Each(pipe, new StringAppender(new Fields("line")));
-
-        Flow flow = conn.connect(source, sink, pipe);
-
-        flow.complete();
-
-        FileAssert.assertBinaryEquals(new File(
-                "src/test/resources/data/fileDynamicFilterExpected"), new File(
-                "build/test/hbasedynamicreadfiltered/part-00000"));
+      }
 
     }
 
-	static private boolean isSameValue(String row, String cf, String column,
-			String value, int size, TupleEntry entry) {
-		if (!entry.getString(0).equals(row)) {
-			return false;
-		}
+  @Before
+  public void beforeInstance() throws IOException
+    {
+    fillTable( configuration );
+    }
 
-		@SuppressWarnings("unchecked")
-		NavigableMap<byte[], NavigableMap<byte[], byte[]>> mapmap = (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) entry
-				.getObject(1);
-		if (!mapmap.containsKey(Bytes.toBytes(cf))) {
-			return false;
-		}
+  @Test
+  public void testRead() throws SecurityException, NoSuchMethodException
+    {
 
-		NavigableMap<byte[], byte[]> map = mapmap.get(Bytes.toBytes(cf));
+    Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme(
+      new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
+    Tap sink = new Lfs( new TextLine( new Fields( "line" ) ),
+      "build/test/hbasedynamicread", SinkMode.REPLACE );
 
-		if (map.size() != size) {
-			return false;
-		}
+    Pipe pipe = new Pipe( "hbasedynamicschemepipe" );
 
-		if (!map.containsKey(Bytes.toBytes(column))) {
-			return false;
-		}
+    pipe = new Each( pipe, new Fields( "row", "value" ), new HBaseMapToTuples(
+      new Fields( "row", "cf", "column", "value" ), new Fields( "row",
+      "value" ) ) );
+    pipe = new Each( pipe, new StringAppender( new Fields( "line" ) ) );
 
-		byte[] mapValue = map.get(Bytes.toBytes(column));
+    Flow flow = createHadoopFlowConnector().connect( source, sink, pipe );
 
-		return Arrays.equals(mapValue, Bytes.toBytes(value));
-	}
+    flow.complete();
 
-	@Test
-	public void writeTest() throws IOException, SecurityException,
-			NoSuchMethodException {
-		Tap source = new Lfs(new TextLine(new Fields("line")), inputDataFile);
+    FileAssert.assertBinaryEquals( new File(
+      "src/test/resources/data/fileDynamicExpected" ), new File(
+      "build/test/hbasedynamicread/part-00000" ) );
 
-		Pipe parsePipe = new Each("insert", new RegexSplitter(new Fields("num",
-				"lower", "upper"), " "));
-		parsePipe = new Each(parsePipe, new Insert(new Fields("cf"), "cf"),
-				Fields.ALL);
-		parsePipe = new GroupBy(parsePipe, new Fields("num"));
-		// parsePipe = new Every( parsePipe, new AggregatorWriterTuplesList( new
-		// Fields("key", "value"), "cf", new
-		// Fields("num"), new Fields("lower"), new Fields("upper") ) ) ;
-		parsePipe = new Every(parsePipe, new HBaseTuplesToMap(new Fields("key",
-				"value"), new Fields("cf"), new Fields("num"), new Fields(
-				"lower"), new Fields("upper")));
+    }
 
-		Tap hBaseTap = new HBaseTap("multitable", new HBaseDynamicScheme(
-				new Fields("key"), new Fields("value"), "cf"), SinkMode.REPLACE);
+  @Test
+  public void testReadFiltered() throws SecurityException, NoSuchMethodException, IOException
+    {
+    Properties properties = new Properties();
+    Scan s = new Scan();
+    s.setStartRow( Bytes.toBytes( "row_1" ) );
+    s.setStopRow( Bytes.toBytes( "row_1" ) );
+    properties.setProperty( TableInputFormat.SCAN, TableInputFormat.convertScanToString( s ) );
+    FlowConnector conn = createHadoopFlowConnector( properties );
+    Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme(
+      new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
+    Tap sink = new Lfs( new TextLine( new Fields( "line" ) ),
+      "build/test/hbasedynamicreadfiltered", SinkMode.REPLACE );
 
-		Flow parseFlow = createHadoopFlowConnector().connect(
-				source, hBaseTap, parsePipe);
+    Pipe pipe = new Pipe( "hbasedynamicschemepipe" );
 
-		parseFlow.complete();
+    pipe = new Each( pipe, new Fields( "row", "value" ), new HBaseMapToTuples(
+      new Fields( "row", "cf", "column", "value" ), new Fields( "row",
+      "value" ) ) );
+    pipe = new Each( pipe, new StringAppender( new Fields( "line" ) ) );
 
-		TupleEntryIterator iterator = parseFlow.openSink();
-		assertTrue(isSameValue("1", "cf", "a", "A", 3, iterator.next()));
-		assertTrue(isSameValue("2", "cf", "b", "B", 3, iterator.next()));
-		assertTrue(isSameValue("3", "cf", "c", "C", 1, iterator.next()));
-		assertTrue(isSameValue("4", "cf", "d", "D", 3, iterator.next()));
-		assertTrue(isSameValue("5", "cf", "e", "E", 3, iterator.next()));
+    Flow flow = conn.connect( source, sink, pipe );
 
-		iterator.close();
+    flow.complete();
 
-	}
-}
+    FileAssert.assertBinaryEquals( new File(
+      "src/test/resources/data/fileDynamicFilterExpected" ), new File(
+      "build/test/hbasedynamicreadfiltered/part-00000" ) );
+
+    }
+
+  static private boolean isSameValue( String row, String cf, String column,
+                                      String value, int size, TupleEntry entry )
+    {
+    if( !entry.getString( 0 ).equals( row ) )
+      {
+      return false;
+      }
+
+    @SuppressWarnings("unchecked")
+    NavigableMap<byte[], NavigableMap<byte[], byte[]>> mapmap = (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) entry
+      .getObject( 1 );
+    if( !mapmap.containsKey( Bytes.toBytes( cf ) ) )
+      {
+      return false;
+      }
+
+    NavigableMap<byte[], byte[]> map = mapmap.get( Bytes.toBytes( cf ) );
+
+    if( map.size() != size )
+      {
+      return false;
+      }
+
+    if( !map.containsKey( Bytes.toBytes( column ) ) )
+      {
+      return false;
+      }
+
+    byte[] mapValue = map.get( Bytes.toBytes( column ) );
+
+    return Arrays.equals( mapValue, Bytes.toBytes( value ) );
+    }
+
+  @Test
+  public void writeTest() throws IOException, SecurityException,
+    NoSuchMethodException
+    {
+    Tap source = new Lfs( new TextLine( new Fields( "line" ) ), inputDataFile );
+
+    Pipe parsePipe = new Each( "insert", new RegexSplitter( new Fields( "num",
+      "lower", "upper" ), " " ) );
+    parsePipe = new Each( parsePipe, new Insert( new Fields( "cf" ), "cf" ),
+      Fields.ALL );
+    parsePipe = new GroupBy( parsePipe, new Fields( "num" ) );
+    // parsePipe = new Every( parsePipe, new AggregatorWriterTuplesList( new
+    // Fields("key", "value"), "cf", new
+    // Fields("num"), new Fields("lower"), new Fields("upper") ) ) ;
+    parsePipe = new Every( parsePipe, new HBaseTuplesToMap( new Fields( "key",
+      "value" ), new Fields( "cf" ), new Fields( "num" ), new Fields(
+      "lower" ), new Fields( "upper" ) ) );
+
+    Tap hBaseTap = new HBaseTap( "multitable", new HBaseDynamicScheme(
+      new Fields( "key" ), new Fields( "value" ), "cf" ), SinkMode.REPLACE );
+
+    Flow parseFlow = createHadoopFlowConnector().connect(
+      source, hBaseTap, parsePipe );
+
+    parseFlow.complete();
+
+    TupleEntryIterator iterator = parseFlow.openSink();
+    assertTrue( isSameValue( "1", "cf", "a", "A", 3, iterator.next() ) );
+    assertTrue( isSameValue( "2", "cf", "b", "B", 3, iterator.next() ) );
+    assertTrue( isSameValue( "3", "cf", "c", "C", 1, iterator.next() ) );
+    assertTrue( isSameValue( "4", "cf", "d", "D", 3, iterator.next() ) );
+    assertTrue( isSameValue( "5", "cf", "e", "E", 3, iterator.next() ) );
+
+    iterator.close();
+
+    }
+  }

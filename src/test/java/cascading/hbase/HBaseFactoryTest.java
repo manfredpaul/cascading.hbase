@@ -20,22 +20,20 @@
 
 package cascading.hbase;
 
-import static org.junit.Assert.*;
-
 import java.lang.reflect.Type;
 import java.util.Properties;
-
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests for {@link HBaseFactory}.
- * 
  */
 public class HBaseFactoryTest
   {
@@ -76,7 +74,7 @@ public class HBaseFactoryTest
 
     HBaseFactory factory = new HBaseFactory();
 
-    Fields fields = new Fields( new String[]{ "rowkey", "foo" }, new Type[]{ String.class, String.class } );
+    Fields fields = new Fields( new String[]{"rowkey", "foo"}, new Type[]{String.class, String.class} );
     factory.createScheme( HBaseFactory.FORMAT_NAME, fields, new Properties() );
     }
 
@@ -97,7 +95,7 @@ public class HBaseFactoryTest
 
     String family = "simpsons";
 
-    Fields fields = new Fields( new String[]{ "rowkey", "foo" }, new Type[]{ String.class, String.class } );
+    Fields fields = new Fields( new String[]{"rowkey", "foo"}, new Type[]{String.class, String.class} );
     Properties props = new Properties();
     props.setProperty( HBaseFactory.FORMAT_COLUMN_FAMILY, family );
 
@@ -107,10 +105,10 @@ public class HBaseFactoryTest
     assertTrue( scheme instanceof HBaseScheme );
     HBaseScheme hscheme = (HBaseScheme) scheme;
 
-    assertArrayEquals( new String[]{ family }, hscheme.getFamilyNames() );
+    assertArrayEquals( new String[]{family}, hscheme.getFamilyNames() );
 
-    assertEquals(fields, hscheme.getSinkFields());
-    assertEquals(hscheme.keyField, new Fields("rowkey", String.class));
+    assertEquals( fields, hscheme.getSinkFields() );
+    assertEquals( hscheme.keyField, new Fields( "rowkey", String.class ) );
     }
 
   }

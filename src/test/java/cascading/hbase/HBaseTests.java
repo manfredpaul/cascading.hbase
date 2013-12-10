@@ -3,19 +3,16 @@ package cascading.hbase;
 import java.io.IOException;
 import java.util.Map;
 
+import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
+import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
-
-import com.google.common.collect.Maps;
 
 abstract public class HBaseTests
   {

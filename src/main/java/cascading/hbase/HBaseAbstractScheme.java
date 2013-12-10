@@ -1,83 +1,91 @@
 package cascading.hbase;
 
+import cascading.flow.FlowProcess;
+import cascading.hbase.helper.TableInputFormat;
+import cascading.scheme.Scheme;
+import cascading.scheme.SourceCall;
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import cascading.hbase.helper.TableInputFormat;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
-import cascading.flow.FlowProcess;
-import cascading.scheme.Scheme;
-import cascading.scheme.SourceCall;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
-
 @SuppressWarnings("serial")
 public abstract class HBaseAbstractScheme extends
-	Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]> {
-    /** Field keyFields */
-    protected Fields keyField;
+  Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
+  {
+  /** Field keyFields */
+  protected Fields keyField;
 
-    protected void validate() {
-      if (keyField.size() != 1)
-	    throw new IllegalArgumentException(
-		    "may only have one key field, found: " + keyField.print());
+  protected void validate()
+    {
+    if( keyField.size() != 1 )
+      throw new IllegalArgumentException(
+        "may only have one key field, found: " + keyField.print() );
     }
 
-    protected void setSourceSink(Fields keyFields, Fields... columnFields) {
-      Fields allFields = Fields.join(keyFields, Fields.join(columnFields)); // prepend
+  protected void setSourceSink( Fields keyFields, Fields... columnFields )
+    {
+    Fields allFields = Fields.join( keyFields, Fields.join( columnFields ) ); // prepend
 
-      setSourceFields(allFields);
-      setSinkFields(allFields);
+    setSourceFields( allFields );
+    setSinkFields( allFields );
     }
 
-    protected void setSourceInitFields(JobConf conf, String columns) {
-    	JobConf jobconf = (JobConf)conf;
-    	jobconf.set("mapred.input.format.class", TableInputFormat.class.getName());
-        jobconf.set(TableInputFormat.SCAN_COLUMNS, columns);
+  protected void setSourceInitFields( JobConf conf, String columns )
+    {
+    JobConf jobconf = (JobConf) conf;
+    jobconf.set( "mapred.input.format.class", TableInputFormat.class.getName() );
+    jobconf.set( TableInputFormat.SCAN_COLUMNS, columns );
     }
 
-	protected void setSinkInitFields(JobConf conf) {
-    	conf.set("mapred.output.format.class", TableOutputFormat.class.getName());
-    	conf.setOutputKeyClass(ImmutableBytesWritable.class);
-    	conf.setOutputValueClass(Put.class);
+  protected void setSinkInitFields( JobConf conf )
+    {
+    conf.set( "mapred.output.format.class", TableOutputFormat.class.getName() );
+    conf.setOutputKeyClass( ImmutableBytesWritable.class );
+    conf.setOutputValueClass( Put.class );
     }
 
-    protected Tuple sourceGetTuple(Object key) {
-    	Tuple result = new Tuple();
+  protected Tuple sourceGetTuple( Object key )
+    {
+    Tuple result = new Tuple();
 
-		ImmutableBytesWritable keyWritable = (ImmutableBytesWritable) key;
-		result.add(Bytes.toString(keyWritable.get()));
+    ImmutableBytesWritable keyWritable = (ImmutableBytesWritable) key;
+    result.add( Bytes.toString( keyWritable.get() ) );
 
-		return result;
+    return result;
     }
 
-    protected Put sinkGetPut(TupleEntry tupleEntry) {
-		Tuple keyTuple = tupleEntry.selectTuple(keyField);
+  protected Put sinkGetPut( TupleEntry tupleEntry )
+    {
+    Tuple keyTuple = tupleEntry.selectTuple( keyField );
 
-		byte[] keyBytes = Bytes.toBytes(keyTuple.getString(0));
+    byte[] keyBytes = Bytes.toBytes( keyTuple.getString( 0 ) );
 
-		return new Put(keyBytes);
+    return new Put( keyBytes );
     }
 
-    public abstract String[] getFamilyNames();
+  public abstract String[] getFamilyNames();
 
-    @Override
-    public void sourcePrepare(FlowProcess<JobConf> flowProcess,
-        SourceCall<Object[], RecordReader> sourceCall) {
-      Object[] pair =
-          new Object[]{sourceCall.getInput().createKey(), sourceCall.getInput().createValue()};
+  @Override
+  public void sourcePrepare( FlowProcess<JobConf> flowProcess,
+                             SourceCall<Object[], RecordReader> sourceCall )
+    {
+    Object[] pair =
+      new Object[]{sourceCall.getInput().createKey(), sourceCall.getInput().createValue()};
 
-      sourceCall.setContext(pair);
+    sourceCall.setContext( pair );
     }
 
-    @Override
-    public void sourceCleanup(FlowProcess<JobConf> flowProcess,
-        SourceCall<Object[], RecordReader> sourceCall) {
-      sourceCall.setContext(null);
+  @Override
+  public void sourceCleanup( FlowProcess<JobConf> flowProcess,
+                             SourceCall<Object[], RecordReader> sourceCall )
+    {
+    sourceCall.setContext( null );
     }
-}
+  }

@@ -17,20 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cascading.hbase;
 
-import static cascading.hbase.helper.Utils.*;
+package cascading.hbase;
 
 import java.lang.reflect.Type;
 import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static cascading.hbase.helper.Utils.throwIfNullOrEmpty;
 
 /**
  * {@link HBaseFactory} is a lingual compliant provider factory. It makes it
@@ -38,7 +38,6 @@ import cascading.tuple.Fields;
  * {@link HBaseScheme} intances, that can only talk to one column family at a
  * time. This is done to have an easy way to translate the data to the SQL
  * semantics of lingual.
- * 
  */
 public class HBaseFactory
   {
@@ -59,13 +58,13 @@ public class HBaseFactory
   /**
    * Creates a new {@link Tap} for the given protocol, scheme, identifier and
    * properties.
-   * 
-   * @param protocol has to be "hbase".
-   * @param scheme a scheme instance, which has to be of type
-   *          {@link HBaseScheme}.
+   *
+   * @param protocol   has to be "hbase".
+   * @param scheme     a scheme instance, which has to be of type
+   *                   {@link HBaseScheme}.
    * @param identifier The identifier of the hbase tap, which is typically the
-   *          table name.
-   * @param mode The sinkMode in which the Tap is used.
+   *                   table name.
+   * @param mode       The sinkMode in which the Tap is used.
    * @param properties A properties object. Currently ignored.
    * @return a new {@link HBaseTap}
    */
@@ -84,11 +83,11 @@ public class HBaseFactory
    * The first field is used for the rowkey in HBase, all other fields are used
    * for qualifiers in the table. The column family to use has to be given via
    * the properties instance.
-   * 
-   * @param format only 'hbase' is supported
-   * @param fields a fields instance with at least 2 fields.
+   *
+   * @param format     only 'hbase' is supported
+   * @param fields     a fields instance with at least 2 fields.
    * @param properties a {@link Properties} instance containing the column
-   *          family to use. (see {@link HBaseFactory#FORMAT_COLUMN_FAMILY}.
+   *                   family to use. (see {@link HBaseFactory#FORMAT_COLUMN_FAMILY}.
    * @return a new {@link HBaseScheme} instance.
    */
   @SuppressWarnings("rawtypes")
@@ -110,8 +109,8 @@ public class HBaseFactory
     Fields keyFields = new Fields( fields.get( 0 ), fields.getTypeClass( 0 ) );
 
     // the rest is treated as qualifiers
-    Comparable[] cmps = new Comparable[fields.size() - 1];
-    Type[] types = new Type[fields.size() - 1];
+    Comparable[] cmps = new Comparable[ fields.size() - 1 ];
+    Type[] types = new Type[ fields.size() - 1 ];
     for( int i = 1; i < fields.size(); i++ )
       {
       cmps[ i - 1 ] = fields.get( i );

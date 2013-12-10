@@ -17,6 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hbase.mapred;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ import org.apache.hadoop.mapred.Reporter;
  * A Base for {@link TableInputFormat}s. Receives a {@link HTable}, a
  * byte[] of input columns and optionally a {@link Filter}.
  * Subclasses may use other TableRecordReader implementations.
- * <p>
+ * <p/>
  * An example of a subclass:
  * <pre>
  *   class ExampleTIF extends TableInputFormatBase implements JobConfigurable {
@@ -66,9 +67,10 @@ import org.apache.hadoop.mapred.Reporter;
 
 @Deprecated
 public abstract class TableInputFormatBase
-implements InputFormat<ImmutableBytesWritable, Result> {
-  final Log LOG = LogFactory.getLog(TableInputFormatBase.class);
-  private byte [][] inputColumns;
+  implements InputFormat<ImmutableBytesWritable, Result>
+  {
+  final Log LOG = LogFactory.getLog( TableInputFormatBase.class );
+  private byte[][] inputColumns;
   private HTable table;
   private TableRecordReader tableRecordReader;
   private Filter rowFilter;
@@ -78,25 +80,27 @@ implements InputFormat<ImmutableBytesWritable, Result> {
    * the default.
    *
    * @see org.apache.hadoop.mapred.InputFormat#getRecordReader(InputSplit,
-   *      JobConf, Reporter)
+   * JobConf, Reporter)
    */
   public RecordReader<ImmutableBytesWritable, Result> getRecordReader(
-      InputSplit split, JobConf job, Reporter reporter)
-  throws IOException {
+    InputSplit split, JobConf job, Reporter reporter )
+    throws IOException
+    {
     TableSplit tSplit = (TableSplit) split;
     TableRecordReader trr = this.tableRecordReader;
     // if no table record reader was provided use default
-    if (trr == null) {
+    if( trr == null )
+      {
       trr = new TableRecordReader();
-    }
-    trr.setStartRow(tSplit.getStartRow());
-    trr.setEndRow(tSplit.getEndRow());
-    trr.setHTable(this.table);
-    trr.setInputColumns(this.inputColumns);
-    trr.setRowFilter(this.rowFilter);
+      }
+    trr.setStartRow( tSplit.getStartRow() );
+    trr.setEndRow( tSplit.getEndRow() );
+    trr.setHTable( this.table );
+    trr.setInputColumns( this.inputColumns );
+    trr.setRowFilter( this.rowFilter );
     trr.init();
     return trr;
-  }
+    }
 
   /**
    * Calculates the splits that will serve as input for the map tasks.
@@ -108,82 +112,88 @@ implements InputFormat<ImmutableBytesWritable, Result> {
    * case splits are uneven the bigger splits are placed first in the
    * {@link InputSplit} array.
    *
-   * @param job the map task {@link JobConf}
+   * @param job       the map task {@link JobConf}
    * @param numSplits a hint to calculate the number of splits (mapred.map.tasks).
-   *
    * @return the input splits
-   *
    * @see org.apache.hadoop.mapred.InputFormat#getSplits(org.apache.hadoop.mapred.JobConf, int)
    */
-  public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    if (this.table == null) {
-      throw new IOException("No table was provided");
-    }
-    byte [][] startKeys = this.table.getStartKeys();
-    if (startKeys == null || startKeys.length == 0) {
-      throw new IOException("Expecting at least one region");
-    }
+  public InputSplit[] getSplits( JobConf job, int numSplits ) throws IOException
+    {
+    if( this.table == null )
+      {
+      throw new IOException( "No table was provided" );
+      }
+    byte[][] startKeys = this.table.getStartKeys();
+    if( startKeys == null || startKeys.length == 0 )
+      {
+      throw new IOException( "Expecting at least one region" );
+      }
 /*    if (this.inputColumns == null || this.inputColumns.length == 0) {
       throw new IOException("Expecting at least one column");
     }*/
-    int realNumSplits = numSplits > startKeys.length? startKeys.length:
+    int realNumSplits = numSplits > startKeys.length ? startKeys.length :
       numSplits;
-    InputSplit[] splits = new InputSplit[realNumSplits];
+    InputSplit[] splits = new InputSplit[ realNumSplits ];
     int middle = startKeys.length / realNumSplits;
     int startPos = 0;
-    for (int i = 0; i < realNumSplits; i++) {
+    for( int i = 0; i < realNumSplits; i++ )
+      {
       int lastPos = startPos + middle;
       lastPos = startKeys.length % realNumSplits > i ? lastPos + 1 : lastPos;
-      String regionLocation = table.getRegionLocation(startKeys[startPos]).
+      String regionLocation = table.getRegionLocation( startKeys[ startPos ] ).
         getServerAddress().getHostname();
-      splits[i] = new TableSplit(this.table.getTableName(),
-        startKeys[startPos], ((i + 1) < realNumSplits) ? startKeys[lastPos]:
-          HConstants.EMPTY_START_ROW, regionLocation);
-      LOG.info("split: " + i + "->" + splits[i]);
+      splits[ i ] = new TableSplit( this.table.getTableName(),
+        startKeys[ startPos ], ( ( i + 1 ) < realNumSplits ) ? startKeys[ lastPos ] :
+        HConstants.EMPTY_START_ROW, regionLocation );
+      LOG.info( "split: " + i + "->" + splits[ i ] );
       startPos = lastPos;
-    }
+      }
     return splits;
-  }
+    }
 
   /**
    * @param inputColumns to be passed in {@link Result} to the map task.
    */
-  protected void setInputColumns(byte [][] inputColumns) {
+  protected void setInputColumns( byte[][] inputColumns )
+    {
     this.inputColumns = inputColumns;
-  }
+    }
 
   /**
    * Allows subclasses to get the {@link HTable}.
    */
-  protected HTable getHTable() {
+  protected HTable getHTable()
+    {
     return this.table;
-  }
+    }
 
   /**
    * Allows subclasses to set the {@link HTable}.
    *
    * @param table to get the data from
    */
-  protected void setHTable(HTable table) {
+  protected void setHTable( HTable table )
+    {
     this.table = table;
-  }
+    }
 
   /**
    * Allows subclasses to set the {@link TableRecordReader}.
    *
-   * @param tableRecordReader
-   *                to provide other {@link TableRecordReader} implementations.
+   * @param tableRecordReader to provide other {@link TableRecordReader} implementations.
    */
-  protected void setTableRecordReader(TableRecordReader tableRecordReader) {
+  protected void setTableRecordReader( TableRecordReader tableRecordReader )
+    {
     this.tableRecordReader = tableRecordReader;
-  }
+    }
 
   /**
    * Allows subclasses to set the {@link Filter} to be used.
    *
    * @param rowFilter
    */
-  protected void setRowFilter(Filter rowFilter) {
+  protected void setRowFilter( Filter rowFilter )
+    {
     this.rowFilter = rowFilter;
+    }
   }
-}
