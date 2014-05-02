@@ -17,7 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'cascading-hbase'
 
-include 'cascading-hbase-hadoop'
-include 'cascading-hbase-hadoop2-mr1'
+sourceSets {
+  main {
+    java {
+      srcDirs += 'src/main/shared'
+    }
+  }
+
+  test {
+    java {
+      srcDirs += 'src/test/shared'
+    }
+    resources{
+      srcDirs += 'src/test/shared-ressources'
+    }
+  }
+}

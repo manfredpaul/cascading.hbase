@@ -29,7 +29,7 @@
 # Building #
 
  This version could be built by using gradle:
-     
+
      > gradle build
 
 If the tests are failing on your machine, do a `umask 022` before starting the
@@ -37,32 +37,45 @@ build.
 
 # Using #
 
+## Hadoop 1 vs. Hadoop 2
+
+HBase provides two sets of dependencies since version 0.96, to work with the two
+different major version os hadoop. This builds supports both versions and
+creates two sets of jars.
+
+If you are using a Hadoop distribution based on Apache Hadoop 1.x, you have to
+use `cascading:cascading-hbase-hadoop:2.5.0-*`. If you are using a Hadoop 2.x
+based distribution, you have to use
+`cascading:cascading-hbase-hadoop2-mr1:2.5.0-+` as a dependency.
+
 ## In cascading applications ##
 
-  The cascading-hbase.jar file should be added to the "lib" directory of your
-  Hadoop application jar file along with all Cascading dependencies.
+Add the correct jar for your distribution to the classpath with your build tool
+of choice.
 
-  The jar files are deployed on [conjars](http://conjars.org/cascading/cascading-hbase)
+All jars are deployed on [conjars](http://conjars.org/).
 
-  See the HBaseDynamicTest and HBaseStaticTest unit tests for sample code on
-  using the HBase taps, schemes and helpers in your Cascading application.
+See the `HBaseDynamicTest` and `HBaseStaticTest` unit tests for sample code on
+using the HBase taps, schemes and helpers in your Cascading application.
 
 ## In lingual ##
 
-This project also creates a lingual compliant provider jar, which can be used to
-talk to HBase via standard SQL. Below can you find a possible session with
+This project also creates a lingual compliant provider jars, which can be used
+to talk to HBase via standard SQL. Below you can find a possible session with
 lingual and HBase.
 
-    # the hbase provider can only be used with the hadoop platform
+    # the hbase provider can only be used with the hadoop or hadoop2-mr1 platform
     > export LINGUAL_PLATFORM=hadoop
-    
+
     # tell lingual, where the namenode, the jobtracker and the hbase zk quorum are
     > export LINGUAL_CONFIG=fs.default.name=hdfs://master.local:9000,mapred.job.tracker=master.local:9001,hbase.zookeeper.quorum=hadoop1.local
 
 
 First we intall the provider, by dowlaoding it from conjars.
 
-    > lingual catalog --provider --add cascading:cascading-hbase:2.2.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop:2.5.0-+:provider
+or
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop2-mr1:2.5.0-+:provider
 
 Next we are creating a new schema called `working` to work with.
 
@@ -84,7 +97,7 @@ subsequent fields are used as qualifiers in a given column family (see above).
     > lingual catalog --schema working --stereotype hbtest -add --columns ROWKEY,A,B,C --types string,string,string,string
 
 Now we add the `hbase` protocol to the schema.
-   
+
     > lingual catalog --schema working --protocol hbase --add --provider hbase
 
 Finally we create a lingua table called `hb` with the hbase provider. The table
@@ -120,12 +133,12 @@ Now we can talk to the HBase table from lingual:
 
 As explained above only qualifiers from one column family can be mapped to the
 same table in lingual. You can still map multiple column families in the same
-HBase table to multiple tables in lingual. 
+HBase table to multiple tables in lingual.
 
 Next to that, there is currently a limitation related to the casing of the
 qualifiers in a column family. Since lingual uses SQL semantics for column
 names, it tries to normalize them and uses upper case names. You can use
-lowercase names as well, but you might run into problems, when you do a 
+lowercase names as well, but you might run into problems, when you do a
 `select * from table` style query. This limitation might be removed in future versions
 of lingual and therefore in the HBase provider.  The easiest way to work around
 this limitation is using uppercase qualifiers.
@@ -148,29 +161,35 @@ in lingual.
 Other systems interacting with the same table need to take his behaviour into
 account.
 
-# License #
+# Known Issues #
 
-  Copyright (c) 2009 Concurrent, Inc.
+HBase has gone through a lot of changes in 0.96+. One of these changes causes
+Hadoop jobs to fail with the following error message:
 
-  This work has been released into the public domain by the copyright holder,
-  unless otherwise noted. This applies worldwide.
+`IllegalAccessError: class com.google.protobuf.ZeroCopyLiteralByteString cannot
+access its superclass com.google.protobuf.LiteralByteString`
 
-  In case this is not legally possible:
-  The copyright holder grants any entity the right
-  to use this work for any purpose, without any
-  conditions, unless such conditions are required by law.
+This issue is described in
+[HBASE-10304](https://issues.apache.org/jira/browse/HBASE-10304) which also
+contains a work-around.
 
-  The code contains contributions from the following authors:
-  - Andre Kelpe
-  - Brad Anderson
-  - Chris K Wensel
-  - Dave White
-  - Dru Jensen
-  - Jean-Daniel Cryans
-  - JingYu Huang
-  - Ken MacInnis
-  - Kurt Harriger
-  - matan
-  - Ryan Rawson
-  - Soren Macbet
+A more structural solution is being discussed in
+[HBASE-11118](https://issues.apache.org/jira/browse/HBASE-11118).
+
+
+# Acknowledgements #
+
+The code contains contributions from the following authors:
+- Andre Kelpe
+- Brad Anderson
+- Chris K Wensel
+- Dave White
+- Dru Jensen
+- Jean-Daniel Cryans
+- JingYu Huang
+- Ken MacInnis
+- Kurt Harriger
+- matan
+- Ryan Rawson
+- Soren Macbeth
 

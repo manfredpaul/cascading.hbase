@@ -27,7 +27,7 @@ import org.junit.Test;
 public class HBaseStaticTest extends HBaseTestsStaticScheme
   {
 
-  String inputFile = "src/test/resources/data/small.txt";
+  String inputFile = "src/test/shared-resources/data/small.txt";
 
   @AfterClass
   public static void tearDown() throws IOException
@@ -86,7 +86,7 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
 
     deleteTable( configuration, "multitable" );
 
-    String inputFile = "src/test/resources/data/small.txt";
+    String inputFile = "src/test/shared-resources/data/small.txt";
     // create flow to read from local file and insert into HBase
     Tap source = new Lfs( new TextLine(), inputFile );
 

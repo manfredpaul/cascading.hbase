@@ -16,8 +16,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
 @SuppressWarnings("serial")
-public abstract class HBaseAbstractScheme extends
-  Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
+public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
   {
   /** Field keyFields */
   protected Fields keyField;
@@ -73,18 +72,15 @@ public abstract class HBaseAbstractScheme extends
   public abstract String[] getFamilyNames();
 
   @Override
-  public void sourcePrepare( FlowProcess<JobConf> flowProcess,
-                             SourceCall<Object[], RecordReader> sourceCall )
+  public void sourcePrepare( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
-    Object[] pair =
-      new Object[]{sourceCall.getInput().createKey(), sourceCall.getInput().createValue()};
+    Object[] pair = new Object[]{sourceCall.getInput().createKey(), sourceCall.getInput().createValue()};
 
     sourceCall.setContext( pair );
     }
 
   @Override
-  public void sourceCleanup( FlowProcess<JobConf> flowProcess,
-                             SourceCall<Object[], RecordReader> sourceCall )
+  public void sourceCleanup( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
     sourceCall.setContext( null );
     }

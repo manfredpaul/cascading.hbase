@@ -53,7 +53,7 @@ public class HBaseDynamicTest extends HBaseTests
 
   private static final String TEST_CF = "testCF";
 
-  private static final String inputDataFile = "src/test/resources/data/small.txt";
+  private static final String inputDataFile = "src/test/shared-resources/data/small.txt";
 
   private static void fillTable( Configuration configuration )
     throws IOException
@@ -136,7 +136,7 @@ public class HBaseDynamicTest extends HBaseTests
     flow.complete();
 
     FileAssert.assertBinaryEquals( new File(
-      "src/test/resources/data/fileDynamicExpected" ), new File(
+      "src/test/shared-resources/data/fileDynamicExpected" ), new File(
       "build/test/hbasedynamicread/part-00000" ) );
 
     }
@@ -173,7 +173,7 @@ public class HBaseDynamicTest extends HBaseTests
     flow.complete();
 
     FileAssert.assertBinaryEquals( new File(
-      "src/test/resources/data/fileDynamicFilterExpected" ), new File(
+      "src/test/shared-resources/data/fileDynamicFilterExpected" ), new File(
       "build/test/hbasedynamicreadfiltered/part-00000" ) );
 
     }

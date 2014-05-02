@@ -196,7 +196,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     catch( IOException e )
       {
-      throw new RuntimeException( tableName + " does not exist !" );
+      throw new RuntimeException( "failed to create table '" + tableName + "'", e);
       }
 
     conf.set( TableOutputFormat.OUTPUT_TABLE, tableName );
@@ -216,7 +216,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   @Override
   public boolean equals( Object object )
     {
-
     if( object == null )
       return false;
     if( this == object )
