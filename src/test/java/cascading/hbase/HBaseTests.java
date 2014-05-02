@@ -7,6 +7,7 @@ import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseCommonTestingUtility;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
@@ -25,7 +26,7 @@ abstract public class HBaseTests
   @BeforeClass
   public static void setUpBeforeClass() throws Exception
     {
-    System.setProperty( HBaseTestingUtility.BASE_TEST_DIRECTORY_KEY, "build/test-data" );
+    System.setProperty( HBaseCommonTestingUtility.BASE_TEST_DIRECTORY_KEY, "build/test-data" );
     utility = new HBaseTestingUtility();
     utility.startMiniCluster( 1 );
     configuration = utility.getConfiguration();

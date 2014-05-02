@@ -12,12 +12,8 @@ import cascading.tuple.Tuple;
 import org.apache.hadoop.hbase.util.Bytes;
 
 @SuppressWarnings("serial")
-public class HBaseTuplesToMap extends
-  BaseOperation<HBaseTuplesToMap.AggregatorWriterTuplesListContext>
-  implements
-  Aggregator<HBaseTuplesToMap.AggregatorWriterTuplesListContext>
+public class HBaseTuplesToMap extends BaseOperation<HBaseTuplesToMap.AggregatorWriterTuplesListContext> implements Aggregator<HBaseTuplesToMap.AggregatorWriterTuplesListContext>
   {
-
   static class AggregatorWriterTuplesListContext
     {
     public NavigableMap<byte[], NavigableMap<byte[], byte[]>> keyValueMap =

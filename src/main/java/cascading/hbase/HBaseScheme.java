@@ -137,8 +137,7 @@ public class HBaseScheme extends HBaseAbstractScheme
         String fieldName = (String) fields.get( k );
 
         byte[] fieldNameBytes = Bytes.toBytes( fieldName );
-        byte[] cellValue = row
-          .getValue( familyNameBytes, fieldNameBytes );
+        byte[] cellValue = row.getValue( familyNameBytes, fieldNameBytes );
 
         Object deserialized = Bytes.toString( cellValue );
         Type type = fields.getType( k );

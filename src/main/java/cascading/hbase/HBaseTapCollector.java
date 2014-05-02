@@ -39,8 +39,7 @@ import org.slf4j.LoggerFactory;
  * {@link cascading.tuple.TupleEntrySchemeCollector} that writes tuples to the
  * resource managed by a particular {@link HBaseTap} instance.
  */
-public class HBaseTapCollector extends TupleEntrySchemeCollector implements
-  OutputCollector
+public class HBaseTapCollector extends TupleEntrySchemeCollector implements OutputCollector
   {
   /** Field LOG */
   private static final Logger LOG = LoggerFactory
@@ -110,8 +109,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements
     catch( IOException exception )
       {
       LOG.warn( "exception closing: {}", exception );
-      throw new TapException( "exception closing HBaseTapCollector",
-        exception );
+      throw new TapException( "exception closing HBaseTapCollector", exception );
       }
     finally
       {

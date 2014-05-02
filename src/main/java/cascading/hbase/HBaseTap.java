@@ -15,10 +15,12 @@ package cascading.hbase;
 import java.io.IOException;
 import java.util.UUID;
 
+import cascading.CascadingException;
 import cascading.flow.FlowProcess;
 import cascading.hbase.helper.TableInputFormat;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tap.TapException;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
@@ -26,10 +28,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.MasterNotRunningException;
-import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
+import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
@@ -82,8 +82,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param HBaseFullScheme the h base full scheme
    * @param uniqueId        the uniqueId (0 if no id given)
    */
-  public HBaseTap( String tableName, HBaseAbstractScheme HBaseFullScheme,
-                   int uniqueId )
+  public HBaseTap( String tableName, HBaseAbstractScheme HBaseFullScheme, int uniqueId )
     {
     this( tableName, HBaseFullScheme, SinkMode.KEEP, uniqueId );
     }
@@ -95,8 +94,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param HBaseFullScheme the h base full scheme
    * @param sinkMode        the sink mode
    */
-  public HBaseTap( String tableName, HBaseAbstractScheme HBaseFullScheme,
-                   SinkMode sinkMode )
+  public HBaseTap( String tableName, HBaseAbstractScheme HBaseFullScheme, SinkMode sinkMode )
     {
     this( tableName, HBaseFullScheme, sinkMode, 0 );
     }
@@ -109,8 +107,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
    * @param sinkMode        of type SinkMode
    * @param uniqueId        the uniqueId (0 if no id given)
    */
-  public HBaseTap( String tableName, HBaseAbstractScheme HBaseFullScheme,
-                   SinkMode sinkMode, int uniqueId )
+  public HBaseTap( String tableName, HBaseAbstractScheme HBaseFullScheme, SinkMode sinkMode, int uniqueId )
     {
     super( HBaseFullScheme, sinkMode );
     this.tableName = tableName;
@@ -140,8 +137,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     return hBaseCollector;
     }
 
-  private HBaseAdmin getHBaseAdmin( JobConf conf )
-    throws MasterNotRunningException, ZooKeeperConnectionException
+  private HBaseAdmin getHBaseAdmin( JobConf conf ) throws IOException
     {
     Thread.currentThread().setContextClassLoader( HBaseConfiguration.class.getClassLoader() );
     if( hBaseAdmin == null )
@@ -163,16 +159,14 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
         for( Token t : currentUser.getTokens() )
           {
           LOG.debug( "Token {} is available", t );
-          //there must be HBASE_AUTH_TOKEN exists, if not bad thing will happen, it's must be generated when job submission.
+          //there must be HBASE_AUTH_TOKEN exists, if not bad thing will happen, it's must be generated during job submission.
           if( "HBASE_AUTH_TOKEN".equalsIgnoreCase( t.getKind().toString() ) )
-            {
             credentials.addToken( t.getKind(), t );
-            }
           }
         }
       catch( IOException e )
         {
-        throw new RuntimeException( "Unable to obtain HBase auth token for " + user, e );
+        throw new TapException( "Unable to obtain HBase auth token for " + user, e );
         }
       }
     }
@@ -204,21 +198,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
       {
       throw new RuntimeException( tableName + " does not exist !" );
       }
-
-    // // do not delete if initialized from within a task
-    // if (isReplace() && conf.get("mapred.task.partition") == null) {
-    // try {
-    // deleteResource(conf);
-    // } catch (IOException e) {
-    // throw new RuntimeException("could not delete resource: " + e);
-    // }
-    // } else if( isUpdate() ) {
-    // try {
-    // createResource(conf);
-    // } catch (IOException e) {
-    // throw new RuntimeException(tableName + " does not exist !");
-    // }
-    // }
 
     conf.set( TableOutputFormat.OUTPUT_TABLE, tableName );
     super.sinkConfInit( flowProcess, conf );
@@ -310,10 +289,8 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
         return true;
 
       LOG.debug( "deleting hbase table: {}", tableName );
-
       hBaseAdmin.disableTable( tableName );
       hBaseAdmin.deleteTable( tableName );
-
       return true;
 
       }

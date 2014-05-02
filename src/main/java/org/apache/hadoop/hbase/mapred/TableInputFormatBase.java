@@ -140,8 +140,7 @@ public abstract class TableInputFormatBase
       {
       int lastPos = startPos + middle;
       lastPos = startKeys.length % realNumSplits > i ? lastPos + 1 : lastPos;
-      String regionLocation = table.getRegionLocation( startKeys[ startPos ] ).
-        getServerAddress().getHostname();
+      String regionLocation = table.getRegionLocation( startKeys[ startPos ] ).getHostname();
       splits[ i ] = new TableSplit( this.table.getTableName(),
         startKeys[ startPos ], ( ( i + 1 ) < realNumSplits ) ? startKeys[ lastPos ] :
         HConstants.EMPTY_START_ROW, regionLocation );

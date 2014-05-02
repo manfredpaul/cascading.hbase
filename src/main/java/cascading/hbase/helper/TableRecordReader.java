@@ -32,8 +32,7 @@ import org.apache.hadoop.mapred.RecordReader;
 /**
  * Iterate over an HBase table data, return (Text, RowResult) pairs
  */
-public class TableRecordReader
-  implements RecordReader<ImmutableBytesWritable, Result>
+public class TableRecordReader implements RecordReader<ImmutableBytesWritable, Result>
   {
 
   private TableRecordReaderImpl recordReaderImpl = new TableRecordReaderImpl();

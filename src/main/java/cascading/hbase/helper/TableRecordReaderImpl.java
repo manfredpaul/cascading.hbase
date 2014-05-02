@@ -165,9 +165,9 @@ public class TableRecordReaderImpl
 
     if( result != null && result.size() > 0 )
       {
-      key.set( result.getRow() );
+      key.set(result.getRow());
       lastSuccessfulRow = key.get();
-      Writables.copyWritable( result, value );
+      value.copyFrom(result);
       return true;
       }
     return false;

@@ -20,10 +20,6 @@
 
 package cascading.hbase.helper;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -33,6 +29,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
+import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
 import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -77,23 +75,9 @@ public class TableInputFormat extends TableInputFormatBase implements
   /** The number of rows for caching that will be passed to scanners. */
   public static final String SCAN_CACHEDROWS = "hbase.mapreduce.scan.cachedrows";
 
+  @Override
   public void configure( JobConf job )
     {
-//        Path[] tableNames = FileInputFormat.getInputPaths(job);
-//        String colArg = job.get(COLUMN_LIST);
-//        String[] colNames = colArg.split(" ");
-//        byte [][] m_cols = new byte[colNames.length][];
-//        for (int i = 0; i < m_cols.length; i++) {
-//            m_cols[i] = Bytes.toBytes(colNames[i]);
-//        }
-//        setInputColumns(m_cols);
-//        try {
-//            setHTable(new HTable(HBaseConfiguration.create(job), tableNames[0].getName()));
-//        } catch (Exception e) {
-//            LOG.error(StringUtils.stringifyException(e));
-//        }
-
-    //this.conf = configuration;
     String tableName = job.get( INPUT_TABLE );
     try
       {
@@ -257,10 +241,8 @@ public class TableInputFormat extends TableInputFormatBase implements
    */
   public static String convertScanToString( Scan scan ) throws IOException
     {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream( out );
-    scan.write( dos );
-    return Base64.encodeBytes( out.toByteArray() );
+    ClientProtos.Scan proto = ProtobufUtil.toScan( scan );
+    return Base64.encodeBytes( proto.toByteArray() );
     }
 
   /**
@@ -272,10 +254,7 @@ public class TableInputFormat extends TableInputFormatBase implements
    */
   public static Scan convertStringToScan( String base64 ) throws IOException
     {
-    ByteArrayInputStream bis = new ByteArrayInputStream( Base64.decode( base64 ) );
-    DataInputStream dis = new DataInputStream( bis );
-    Scan scan = new Scan();
-    scan.readFields( dis );
-    return scan;
+    ClientProtos.Scan protoScan = ClientProtos.Scan.parseFrom( Base64.decode( base64 ) );
+    return ProtobufUtil.toScan( protoScan );
     }
   }

@@ -34,6 +34,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
+import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
+import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Before;
 import org.junit.Test;
@@ -141,22 +144,28 @@ public class HBaseDynamicTest extends HBaseTests
   @Test
   public void testReadFiltered() throws SecurityException, NoSuchMethodException, IOException
     {
+    Scan scan = new Scan();
+    scan.setStartRow( Bytes.toBytes( "row_1" ) );
+    scan.setStopRow( Bytes.toBytes( "row_1" ) );
+
+    ClientProtos.Scan proto = ProtobufUtil.toScan( scan );
+    String scanAsString = Base64.encodeBytes( proto.toByteArray() );
+
     Properties properties = new Properties();
-    Scan s = new Scan();
-    s.setStartRow( Bytes.toBytes( "row_1" ) );
-    s.setStopRow( Bytes.toBytes( "row_1" ) );
-    properties.setProperty( TableInputFormat.SCAN, TableInputFormat.convertScanToString( s ) );
+    properties.setProperty( TableInputFormat.SCAN, scanAsString );
+
     FlowConnector conn = createHadoopFlowConnector( properties );
-    Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme(
-      new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
+    Tap source = new HBaseTap( TEST_TABLE,
+        new HBaseDynamicScheme( new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
+
     Tap sink = new Lfs( new TextLine( new Fields( "line" ) ),
       "build/test/hbasedynamicreadfiltered", SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "hbasedynamicschemepipe" );
 
     pipe = new Each( pipe, new Fields( "row", "value" ), new HBaseMapToTuples(
-      new Fields( "row", "cf", "column", "value" ), new Fields( "row",
-      "value" ) ) );
+      new Fields( "row", "cf", "column", "value" ),
+      new Fields( "row", "value" ) ) );
     pipe = new Each( pipe, new StringAppender( new Fields( "line" ) ) );
 
     Flow flow = conn.connect( source, sink, pipe );
@@ -173,29 +182,21 @@ public class HBaseDynamicTest extends HBaseTests
                                       String value, int size, TupleEntry entry )
     {
     if( !entry.getString( 0 ).equals( row ) )
-      {
       return false;
-      }
 
     @SuppressWarnings("unchecked")
-    NavigableMap<byte[], NavigableMap<byte[], byte[]>> mapmap = (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) entry
-      .getObject( 1 );
+    NavigableMap<byte[], NavigableMap<byte[], byte[]>> mapmap =
+      (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) entry.getObject( 1 );
     if( !mapmap.containsKey( Bytes.toBytes( cf ) ) )
-      {
       return false;
-      }
 
     NavigableMap<byte[], byte[]> map = mapmap.get( Bytes.toBytes( cf ) );
 
     if( map.size() != size )
-      {
       return false;
-      }
 
     if( !map.containsKey( Bytes.toBytes( column ) ) )
-      {
       return false;
-      }
 
     byte[] mapValue = map.get( Bytes.toBytes( column ) );
 
@@ -203,22 +204,21 @@ public class HBaseDynamicTest extends HBaseTests
     }
 
   @Test
-  public void writeTest() throws IOException, SecurityException,
-    NoSuchMethodException
+  public void writeTest() throws IOException, SecurityException, NoSuchMethodException
     {
     Tap source = new Lfs( new TextLine( new Fields( "line" ) ), inputDataFile );
 
-    Pipe parsePipe = new Each( "insert", new RegexSplitter( new Fields( "num",
-      "lower", "upper" ), " " ) );
+    Pipe parsePipe = new Each( "insert",
+        new RegexSplitter( new Fields( "num", "lower", "upper" ), " " ) );
     parsePipe = new Each( parsePipe, new Insert( new Fields( "cf" ), "cf" ),
       Fields.ALL );
     parsePipe = new GroupBy( parsePipe, new Fields( "num" ) );
     // parsePipe = new Every( parsePipe, new AggregatorWriterTuplesList( new
     // Fields("key", "value"), "cf", new
     // Fields("num"), new Fields("lower"), new Fields("upper") ) ) ;
-    parsePipe = new Every( parsePipe, new HBaseTuplesToMap( new Fields( "key",
-      "value" ), new Fields( "cf" ), new Fields( "num" ), new Fields(
-      "lower" ), new Fields( "upper" ) ) );
+    parsePipe = new Every( parsePipe, new HBaseTuplesToMap(
+      new Fields( "key", "value" ), new Fields( "cf" ), new Fields( "num" ),
+      new Fields("lower" ), new Fields( "upper" ) ) );
 
     Tap hBaseTap = new HBaseTap( "multitable", new HBaseDynamicScheme(
       new Fields( "key" ), new Fields( "value" ), "cf" ), SinkMode.REPLACE );

@@ -44,7 +44,6 @@ public class Utils
    *
    * @param string           The string to check.
    * @param exceptionMessage The message to be used in the Exception.
-   * @throws IllegalArgumentException.
    */
   public static String throwIfNullOrEmpty( String string, String exceptionMessage )
     {
