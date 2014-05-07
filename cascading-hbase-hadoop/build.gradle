@@ -47,6 +47,7 @@ dependencies {
   testCompile group: 'org.apache.hbase', name: 'hbase-server', classifier: 'tests', version: hbaseVersion
   testCompile group: 'org.apache.hbase', name: 'hbase-common', classifier: 'tests', version: hbaseVersion
   testCompile group: 'org.apache.hbase', name: 'hbase-hadoop-compat', classifier: 'tests', version: hbaseVersion
+  testCompile group: 'org.apache.hbase', name: 'hbase-hadoop-compat', version: hbaseVersion
   testCompile group: 'org.apache.hbase', name: 'hbase-hadoop1-compat', classifier: 'tests', version: hbaseVersion
   testCompile group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion
 }
