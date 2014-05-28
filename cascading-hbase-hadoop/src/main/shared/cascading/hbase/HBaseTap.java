@@ -76,7 +76,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   /**
-   * Instantiates a new h base tap.
+   * Instantiates a new hbase tap.
    *
    * @param tableName       the table name
    * @param HBaseFullScheme the h base full scheme
@@ -121,15 +121,13 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess,
-                                         RecordReader input ) throws IOException
+  public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader input ) throws IOException
     {
     return new HadoopTupleEntrySchemeIterator( flowProcess, this, input );
     }
 
   @Override
-  public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess,
-                                           OutputCollector output ) throws IOException
+  public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess, OutputCollector output ) throws IOException
     {
     HBaseTapCollector hBaseCollector = new HBaseTapCollector( flowProcess,
       this );
@@ -187,8 +185,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   public void sinkConfInit( FlowProcess<JobConf> flowProcess, JobConf conf )
     {
     LOG.debug( "sinking to table: {}", tableName );
-    // TODO: next 5 lines were added, and commented area was taken out
-    // hbase table wasn't being created during tests... wtf?
     obtainToken( conf );
     try
       {
@@ -251,28 +247,20 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   @Override
   public boolean createResource( JobConf conf ) throws IOException
     {
-
     HBaseAdmin hBaseAdmin = getHBaseAdmin( conf );
-
     if( hBaseAdmin.tableExists( tableName ) )
-      {
       return true;
-      }
 
     LOG.info( "creating hbase table: {}", tableName );
 
     HTableDescriptor tableDescriptor = new HTableDescriptor( tableName );
 
-    String[] familyNames = ( (HBaseAbstractScheme) getScheme() )
-      .getFamilyNames();
+    String[] familyNames = ( (HBaseAbstractScheme) getScheme() ).getFamilyNames();
 
     for( String familyName : familyNames )
-      {
       tableDescriptor.addFamily( new HColumnDescriptor( familyName ) );
-      }
 
     hBaseAdmin.createTable( tableDescriptor );
-
     return true;
     }
 

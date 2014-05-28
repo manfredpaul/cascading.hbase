@@ -116,53 +116,35 @@ public class TableInputFormat extends TableInputFormatBase implements
         scan = new Scan();
 
         if( job.get( SCAN_COLUMNS ) != null )
-          {
           addColumns( scan, job.get( SCAN_COLUMNS ) );
-          }
 
         if( job.get( SCAN_COLUMN_FAMILY ) != null )
-          {
           scan.addFamily( Bytes.toBytes( job.get( SCAN_COLUMN_FAMILY ) ) );
-          }
 
         if( job.get( SCAN_TIMESTAMP ) != null )
-          {
           scan.setTimeStamp( Long.parseLong( job.get( SCAN_TIMESTAMP ) ) );
-          }
 
         if( job.get( SCAN_TIMERANGE_START ) != null && job.get( SCAN_TIMERANGE_END ) != null )
-          {
           scan.setTimeRange(
             Long.parseLong( job.get( SCAN_TIMERANGE_START ) ),
             Long.parseLong( job.get( SCAN_TIMERANGE_END ) ) );
-          }
 
         if( job.get( SCAN_MAXVERSIONS ) != null )
-          {
           scan.setMaxVersions( Integer.parseInt( job.get( SCAN_MAXVERSIONS ) ) );
-          }
 
         if( job.get( SCAN_CACHEDROWS ) != null )
-          {
           scan.setCaching( Integer.parseInt( job.get( SCAN_CACHEDROWS ) ) );
-          }
 
         if( job.get( SCAN_ROW_START ) != null )
-          {
           scan.setStartRow(Bytes.fromHex(job.get( SCAN_ROW_START)));
-          }
 
         if( job.get( SCAN_ROW_STOP ) != null )
-          {
           scan.setStopRow(Bytes.fromHex(job.get( SCAN_ROW_STOP)));
-          }
 
         if( job.get( SCAN_FILTER ) != null )
-          {
           scan.setFilter(convertStringToFilter(job.get(SCAN_FILTER)));
-          }
 
-            // false by default, full table scans generate too much BC churn
+        // false by default, full table scans generate too much BC churn
         scan.setCacheBlocks( ( job.getBoolean( SCAN_CACHEBLOCKS, false ) ) );
         }
       catch( Exception e )
@@ -189,13 +171,9 @@ public class TableInputFormat extends TableInputFormatBase implements
     {
     byte[][] fq = KeyValue.parseColumn( familyAndQualifier );
     if( fq.length > 1 && fq[ 1 ] != null && fq[ 1 ].length > 0 )
-      {
       scan.addColumn( fq[ 0 ], fq[ 1 ] );
-      }
     else
-      {
       scan.addFamily( fq[ 0 ] );
-      }
     }
 
   /**
@@ -208,9 +186,7 @@ public class TableInputFormat extends TableInputFormatBase implements
   public static void addColumns( Scan scan, byte[][] columns )
     {
     for( byte[] column : columns )
-      {
       addColumn( scan, column );
-      }
     }
 
   /**
@@ -226,9 +202,7 @@ public class TableInputFormat extends TableInputFormatBase implements
     {
     String[] cols = columns.split( " " );
     for( String col : cols )
-      {
       addColumn( scan, Bytes.toBytes( col ) );
-      }
     }
 
   public void validateInput( JobConf job ) throws IOException
@@ -236,23 +210,16 @@ public class TableInputFormat extends TableInputFormatBase implements
     // expecting exactly one path
     Path[] tableNames = FileInputFormat.getInputPaths( job );
     if( tableNames == null || tableNames.length > 1 )
-      {
       throw new IOException( "expecting one table name" );
-      }
 
     // connected to table?
     if( getHTable() == null )
-      {
-      throw new IOException( "could not connect to table '" +
-        tableNames[ 0 ].getName() + "'" );
-      }
+      throw new IOException( "could not connect to table '" + tableNames[ 0 ].getName() + "'" );
 
     // expecting at least one column
     String colArg = job.get( COLUMN_LIST );
     if( colArg == null || colArg.length() == 0 )
-      {
       throw new IOException( "expecting at least one column" );
-      }
     }
 
   /**
