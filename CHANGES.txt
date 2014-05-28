@@ -1,0 +1,5 @@
+2.5.0 (unreleased)
+
+- support for hbase 0.98 on Hadoop 1.x and Hadoop 2.x
+- support for filter in Scans
+- support for start and stop ranges in Scans
