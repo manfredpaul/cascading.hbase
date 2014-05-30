@@ -71,7 +71,7 @@ lingual and HBase.
     > export LINGUAL_CONFIG=fs.default.name=hdfs://master.local:9000,mapred.job.tracker=master.local:9001,hbase.zookeeper.quorum=hadoop1.local
 
 
-First we intall the provider, by dowlaoding it from conjars.
+First we install the provider, by downloading it from conjars.
 
     > lingual catalog --provider --add cascading:cascading-hbase-hadoop:2.5.0-+:provider
 or
@@ -144,18 +144,18 @@ of lingual and therefore in the HBase provider.  The easiest way to work around
 this limitation is using uppercase qualifiers.
 
 Last but not least keep in mind that this provider gives you a SQL interface to
-HBase, but this interface is not meant for realtime quries. In the spirit of
-linugal it is meant as a SQL driven way for batch processing.
+HBase, but this interface is not meant for realtime queries. In the spirit of
+lingual it is meant as a SQL driven way for batch processing.
 
 ### Types, Lingual, and HBase
 
 The lingual provider takes a pragmatic approach to types, when it reads and
 writes to HBase. Since HBase has no type enforcement and there is no reliable
 way to guess the types, the provider converts every field to a `String` before
-storing it. The type conversion is done viia the types on the Fields instance.
+storing it. The type conversion is done via the types on the Fields instance.
 If the type is a `CoercibleType`, the coerce method is called.  When the data is
 read back, the is converted to its canonical representation, before it handed
-back to linugal. This makes sure that data written from lingual can be read back
+back to lingual. This makes sure that data written from lingual can be read back
 in lingual.
 
 Other systems interacting with the same table need to take his behaviour into
