@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.slf4j.Logger;
@@ -66,8 +67,7 @@ public class HBaseUtils
           {
           if( !existColumnNamesList.contains( coulmnFamily ) )
             {
-            log.warn( coulmnFamily + " does not exist in "
-              + tableName );
+            log.warn( coulmnFamily + " does not exist in " + tableName );
             missingColumnFamilies.add( coulmnFamily );
             }
           }
@@ -94,11 +94,10 @@ public class HBaseUtils
       }
 
     // creating a new table
-    HTableDescriptor hTableDescriptor = new HTableDescriptor( tableNameByte );
+    HTableDescriptor hTableDescriptor = new HTableDescriptor( TableName.valueOf( tableNameByte ) );
     for( String coulmnFamily : coulmnFamilyArray )
       {
-      HColumnDescriptor meta = new HColumnDescriptor(
-        coulmnFamily.getBytes() );
+      HColumnDescriptor meta = new HColumnDescriptor( coulmnFamily.getBytes() );
       hTableDescriptor.addFamily( meta );
       }
 
