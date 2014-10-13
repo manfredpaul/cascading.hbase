@@ -20,7 +20,7 @@
 
 apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
-ext.hbaseVersion = '0.98.1-hadoop1'
+ext.hbaseVersion = '0.98.6.1-hadoop1'
 ext.hadoopVersion = '1.2.1'
 
 dependencies {

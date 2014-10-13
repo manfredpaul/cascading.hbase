@@ -161,21 +161,6 @@ in lingual.
 Other systems interacting with the same table need to take his behaviour into
 account.
 
-# Known Issues #
-
-HBase has gone through a lot of changes in 0.96+. One of these changes causes
-Hadoop jobs to fail with the following error message:
-
-`IllegalAccessError: class com.google.protobuf.ZeroCopyLiteralByteString cannot
-access its superclass com.google.protobuf.LiteralByteString`
-
-This issue is described in
-[HBASE-10304](https://issues.apache.org/jira/browse/HBASE-10304) which also
-contains a work-around.
-
-A more structural solution is being discussed in
-[HBASE-11118](https://issues.apache.org/jira/browse/HBASE-11118).
-
 
 # Acknowledgements #
 
