@@ -5,6 +5,7 @@ import java.util.Map;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.property.AppProps;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseCommonTestingUtility;
@@ -58,7 +59,7 @@ abstract public class HBaseTests
     {
     Map<Object, Object> finalProperties = Maps.newHashMap( props );
     finalProperties.put( HConstants.ZOOKEEPER_CLIENT_PORT, utility.getZkCluster().getClientPort() );
-
+    AppProps.setApplicationName( finalProperties, getClass().getName() );
     return new HadoopFlowConnector( finalProperties );
     }
 
