@@ -194,19 +194,16 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
   @Test
   public void testHBaseMultiFamilyCascade() throws IOException
     {
-
     deleteTable( configuration, "multitable" );
 
     String inputFile = "src/test/shared-resources/data/small.txt";
     // create flow to read from local file and insert into HBase
     Tap source = new Lfs( new TextLine(), inputFile );
 
-    Pipe parsePipe = new Each( "insert", new Fields( "line" ),
-      new RegexSplitter( new Fields( "ignore", "lower", "upper" ), " " ) );
+    Pipe parsePipe = new Each( "insert", new Fields( "line", String.class ),
+      new RegexSplitter( new Fields( "ignore", "lower", "upper" ).applyTypes( int.class, String.class, String.class ), " " ) );
     parsePipe = new Each( parsePipe,
-      new ExpressionFunction( new Fields( "num" ),
-        "(int) (Math.random() * Integer.MAX_VALUE)" ),
-      Fields.ALL );
+      new ExpressionFunction( new Fields( "num", int.class ), "(int) (Math.random() * Integer.MAX_VALUE)" ), Fields.ALL );
 
     Fields keyFields = new Fields( "num" );
     String[] familyNames = {"left", "right"};

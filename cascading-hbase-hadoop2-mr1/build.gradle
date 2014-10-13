@@ -25,7 +25,7 @@ idea {
 }
 
 ext.hbaseVersion = '0.98.6.1-hadoop2'
-ext.hadoopVersion = '2.2.0'
+ext.hadoopVersion = '2.4.1'
 
 dependencies {
 
@@ -39,8 +39,8 @@ dependencies {
   provided group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, changing: true
   provided group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoopVersion
   provided group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoopVersion
-  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
   provided group: 'log4j', name: 'log4j', version: '1.2.17'
 
   testCompile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, changing: true

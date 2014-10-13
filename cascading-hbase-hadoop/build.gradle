@@ -33,8 +33,8 @@ dependencies {
 
   provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
   provided group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion
-  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
+  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+  provided group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.5'
   provided group: 'log4j', name: 'log4j', version: '1.2.17'
 
   testCompile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true

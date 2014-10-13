@@ -20,7 +20,7 @@
 
 import java.text.SimpleDateFormat
 
-ext.cascadingVersion = '2.5.6'
+ext.cascadingVersion = '2.6.0'
 
 apply from: "etc/properties.gradle"
 apply from: "etc/version.gradle"
@@ -39,8 +39,8 @@ buildscript {
   }
 
   dependencies {
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.6'
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
   }
 }
 
