@@ -13,11 +13,14 @@
 package cascading.hbase;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.UUID;
 
 import cascading.CascadingException;
 import cascading.flow.FlowProcess;
 import cascading.hbase.helper.TableInputFormat;
+import cascading.property.AppProps;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
@@ -49,6 +52,27 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   {
+  static
+    {
+    // add cascading-jdbc release to frameworks
+    Properties properties = new Properties();
+    InputStream stream = HBaseTap.class.getClassLoader().getResourceAsStream( "cascading/framework.properties" );
+    if( stream != null )
+      {
+      try
+        {
+        properties.load( stream );
+        stream.close();
+        }
+      catch( IOException exception )
+        {
+        // ingore
+        }
+      }
+    String framework = properties.getProperty( "name" );
+    AppProps.addApplicationFramework( null, framework );
+    }
+
   /** Field LOG */
   private static final Logger LOG = LoggerFactory.getLogger( HBaseTap.class );
 
