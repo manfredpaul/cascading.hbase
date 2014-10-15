@@ -1,4 +1,4 @@
-2.6.0 (unreleased)
+2.6.0
 
 - add cascading-hbase version to Cascading frameworks property
 - udate to Cascading 2.6

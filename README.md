@@ -44,9 +44,9 @@ different major version os hadoop. This builds supports both versions and
 creates two sets of jars.
 
 If you are using a Hadoop distribution based on Apache Hadoop 1.x, you have to
-use `cascading:cascading-hbase-hadoop:2.5.0-*`. If you are using a Hadoop 2.x
+use `cascading:cascading-hbase-hadoop:2.6.0-*`. If you are using a Hadoop 2.x
 based distribution, you have to use
-`cascading:cascading-hbase-hadoop2-mr1:2.5.0-+` as a dependency.
+`cascading:cascading-hbase-hadoop2-mr1:2.6.0-+` as a dependency.
 
 ## In cascading applications ##
 
@@ -73,9 +73,9 @@ lingual and HBase.
 
 First we install the provider, by downloading it from conjars.
 
-    > lingual catalog --provider --add cascading:cascading-hbase-hadoop:2.5.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop:2.6.0-+:provider
 or
-    > lingual catalog --provider --add cascading:cascading-hbase-hadoop2-mr1:2.5.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop2-mr1:2.6.0-+:provider
 
 Next we are creating a new schema called `working` to work with.
 
