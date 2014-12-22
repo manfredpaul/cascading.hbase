@@ -25,10 +25,19 @@ ext.hadoopVersion = '1.2.1'
 
 dependencies {
 
-  compile group: 'org.apache.hbase', name: 'hbase-client', version: hbaseVersion
-  compile group: 'org.apache.hbase', name: 'hbase-server', version: hbaseVersion
-  compile group: 'org.apache.hbase', name: 'hbase-common', version: hbaseVersion
-  compile group: 'org.apache.hbase', name: 'hbase-hadoop1-compat', version: hbaseVersion
+  compile( group: 'org.apache.hbase', name: 'hbase-client', version: hbaseVersion ) {
+    exclude group: 'org.apache.hadoop'
+  }
+  compile( group: 'org.apache.hbase', name: 'hbase-server', version: hbaseVersion ) {
+    exclude group: 'org.apache.hadoop'
+  }
+  compile( group: 'org.apache.hbase', name: 'hbase-common', version: hbaseVersion ) {
+    exclude group: 'org.apache.hadoop'
+  }
+  compile( group: 'org.apache.hbase', name: 'hbase-hadoop1-compat', version: hbaseVersion ) {
+    exclude group: 'org.apache.hadoop'
+  }
+
   compile group: 'xerces', name: 'xercesImpl', version: '2.9.1'
 
   provided group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true

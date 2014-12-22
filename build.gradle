@@ -20,7 +20,7 @@
 
 import java.text.SimpleDateFormat
 
-ext.cascadingVersion = '2.6.0'
+ext.cascadingVersion = '2.6.1'
 
 apply from: "etc/properties.gradle"
 apply from: "etc/version.gradle"
