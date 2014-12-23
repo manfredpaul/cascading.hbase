@@ -15,7 +15,6 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
-@SuppressWarnings("serial")
 public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
   {
   /** Field keyFields */
@@ -24,8 +23,7 @@ public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, 
   protected void validate()
     {
     if( keyField.size() != 1 )
-      throw new IllegalArgumentException(
-        "may only have one key field, found: " + keyField.print() );
+      throw new IllegalArgumentException( "may only have one key field, found: " + keyField.print() );
     }
 
   protected void setSourceSink( Fields keyFields, Fields... columnFields )

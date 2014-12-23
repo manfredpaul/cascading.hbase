@@ -82,17 +82,14 @@ public abstract class TableInputFormatBase
    * @see org.apache.hadoop.mapred.InputFormat#getRecordReader(InputSplit,
    * JobConf, Reporter)
    */
-  public RecordReader<ImmutableBytesWritable, Result> getRecordReader(
-    InputSplit split, JobConf job, Reporter reporter )
-    throws IOException
+  public RecordReader<ImmutableBytesWritable, Result> getRecordReader( InputSplit split, JobConf job, Reporter reporter ) throws IOException
     {
     TableSplit tSplit = (TableSplit) split;
     TableRecordReader trr = this.tableRecordReader;
     // if no table record reader was provided use default
     if( trr == null )
-      {
       trr = new TableRecordReader();
-      }
+
     trr.setStartRow( tSplit.getStartRow() );
     trr.setEndRow( tSplit.getEndRow() );
     trr.setHTable( this.table );
@@ -120,30 +117,27 @@ public abstract class TableInputFormatBase
   public InputSplit[] getSplits( JobConf job, int numSplits ) throws IOException
     {
     if( this.table == null )
-      {
       throw new IOException( "No table was provided" );
-      }
+
     byte[][] startKeys = this.table.getStartKeys();
     if( startKeys == null || startKeys.length == 0 )
-      {
       throw new IOException( "Expecting at least one region" );
-      }
-/*    if (this.inputColumns == null || this.inputColumns.length == 0) {
-      throw new IOException("Expecting at least one column");
-    }*/
-    int realNumSplits = numSplits > startKeys.length ? startKeys.length :
-      numSplits;
+
+
+    int realNumSplits = numSplits > startKeys.length ? startKeys.length : numSplits;
+
     InputSplit[] splits = new InputSplit[ realNumSplits ];
     int middle = startKeys.length / realNumSplits;
     int startPos = 0;
+
     for( int i = 0; i < realNumSplits; i++ )
       {
       int lastPos = startPos + middle;
       lastPos = startKeys.length % realNumSplits > i ? lastPos + 1 : lastPos;
       String regionLocation = table.getRegionLocation( startKeys[ startPos ] ).getHostname();
-      splits[ i ] = new TableSplit( this.table.getTableName(),
-        startKeys[ startPos ], ( ( i + 1 ) < realNumSplits ) ? startKeys[ lastPos ] :
-        HConstants.EMPTY_START_ROW, regionLocation );
+
+      splits[ i ] = new TableSplit( this.table.getTableName(), startKeys[ startPos ], ( ( i + 1 ) < realNumSplits ) ? startKeys[ lastPos ] : HConstants.EMPTY_START_ROW, regionLocation );
+
       LOG.info( "split: " + i + "->" + splits[ i ] );
       startPos = lastPos;
       }

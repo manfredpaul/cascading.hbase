@@ -68,11 +68,11 @@ public class HBaseFactory
    * @param properties A properties object. Currently ignored.
    * @return a new {@link HBaseTap}
    */
-  @SuppressWarnings("rawtypes")
   public Tap createTap( String protocol, Scheme scheme, String identifier, SinkMode mode, Properties properties )
     {
     if( !PROTOCOL_NAME.equals( protocol ) )
       throw new IllegalArgumentException( String.format( "invalid protocol '%s', only '%s' is supported. ", protocol, PROTOCOL_NAME ) );
+
     LOG.debug( "creating HBaseTap with identifier={} in mode={}", identifier, mode );
     return new HBaseTap( identifier, ( (HBaseScheme) scheme ), mode, 0 );
     }
@@ -90,7 +90,6 @@ public class HBaseFactory
    *                   family to use. (see {@link HBaseFactory#FORMAT_COLUMN_FAMILY}.
    * @return a new {@link HBaseScheme} instance.
    */
-  @SuppressWarnings("rawtypes")
   public Scheme createScheme( String format, Fields fields, Properties properties )
     {
     LOG.debug( "creating HBaseScheme with fields={}", fields );

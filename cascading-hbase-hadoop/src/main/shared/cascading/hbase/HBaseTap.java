@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.security.User;
@@ -49,7 +50,6 @@ import org.slf4j.LoggerFactory;
  * the {@link HBaseScheme} to allow for the reading and writing
  * of data to and from a HBase cluster.
  */
-@SuppressWarnings("serial")
 public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   {
   static
@@ -178,12 +178,12 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
         UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
         user = currentUser.getUserName();
         Credentials credentials = conf.getCredentials();
-        for( Token t : currentUser.getTokens() )
+        for( Token token : currentUser.getTokens() )
           {
-          LOG.debug( "Token {} is available", t );
+          LOG.debug( "Token {} is available", token );
           //there must be HBASE_AUTH_TOKEN exists, if not bad thing will happen, it's must be generated during job submission.
-          if( "HBASE_AUTH_TOKEN".equalsIgnoreCase( t.getKind().toString() ) )
-            credentials.addToken( t.getKind(), t );
+          if( "HBASE_AUTH_TOKEN".equalsIgnoreCase( token.getKind().toString() ) )
+            credentials.addToken( token.getKind(), token );
           }
         }
       catch( IOException e )
@@ -201,8 +201,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
 
   public long getModifiedTime( JobConf conf ) throws IOException
     {
-    return System.currentTimeMillis(); // currently unable to find last mod
-    // time on a table
+    return System.currentTimeMillis(); // currently unable to find last mod time on a table
     }
 
   @Override
@@ -247,8 +246,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
 
     HBaseTap tap = (HBaseTap) object;
 
-    if( tableName == null ? tap.tableName != null : !tableName
-      .equals( tap.tableName ) )
+    if( tableName == null ? tap.tableName != null : !tableName.equals( tap.tableName ) )
       return false;
 
     return uniqueId == tap.uniqueId;
@@ -277,7 +275,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
 
     LOG.info( "creating hbase table: {}", tableName );
 
-    HTableDescriptor tableDescriptor = new HTableDescriptor( tableName );
+    HTableDescriptor tableDescriptor = new HTableDescriptor( TableName.valueOf( tableName ) );
 
     String[] familyNames = ( (HBaseAbstractScheme) getScheme() ).getFamilyNames();
 

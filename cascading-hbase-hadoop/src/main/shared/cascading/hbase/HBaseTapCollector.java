@@ -62,8 +62,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
    * @param tap         of type Tap
    * @throws IOException when fails to initialize
    */
-  public HBaseTapCollector( FlowProcess<JobConf> flowProcess,
-                            Tap<JobConf, RecordReader, OutputCollector> tap ) throws IOException
+  public HBaseTapCollector( FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap ) throws IOException
     {
     super( flowProcess, tap.getScheme() );
     this.hadoopFlowProcess = flowProcess;
@@ -91,10 +90,9 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
     {
     tap.sinkConfInit( hadoopFlowProcess, conf );
     OutputFormat outputFormat = conf.getOutputFormat();
-    LOG.info( "Output format class is: "
-      + outputFormat.getClass().toString() );
-    writer = outputFormat.getRecordWriter( null, conf, tap.getIdentifier(),
-      Reporter.NULL );
+    LOG.info( "Output format class is: " + outputFormat.getClass().toString() );
+
+    writer = outputFormat.getRecordWriter( null, conf, tap.getIdentifier(), Reporter.NULL );
     sinkCall.setOutput( this );
     }
 

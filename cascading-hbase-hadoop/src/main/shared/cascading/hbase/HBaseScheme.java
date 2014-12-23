@@ -52,8 +52,7 @@ import org.slf4j.LoggerFactory;
 public class HBaseScheme extends HBaseAbstractScheme
   {
   /** Field LOG */
-  private static final Logger LOG = LoggerFactory
-    .getLogger( HBaseScheme.class );
+  private static final Logger LOG = LoggerFactory.getLogger( HBaseScheme.class );
 
   /** String familyNames */
   private String[] familyNames;
@@ -268,6 +267,7 @@ public class HBaseScheme extends HBaseAbstractScheme
       String familyName = this.familyNames[ i ];
       byte[] familyNameBytes = Bytes.toBytes( familyName );
       Fields fields = this.valueFields[ i ];
+
       for( int k = 0; k < fields.size(); k++ )
         {
         String fieldName = (String) fields.get( k );
@@ -289,7 +289,6 @@ public class HBaseScheme extends HBaseAbstractScheme
     }
 
 
-  @SuppressWarnings("unchecked")
   @Override
   public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
     {
@@ -321,8 +320,7 @@ public class HBaseScheme extends HBaseAbstractScheme
           dataOutputBuffer.reset();
           writable.write( dataOutputBuffer );
           objectInBytes = new byte[ dataOutputBuffer.getLength() ];
-          System.arraycopy( dataOutputBuffer.getData(), 0,
-            objectInBytes, 0, dataOutputBuffer.getLength() );
+          System.arraycopy( dataOutputBuffer.getData(), 0, objectInBytes, 0, dataOutputBuffer.getLength() );
           }
         else if( fieldType instanceof CoercibleType )
           {
@@ -392,7 +390,6 @@ public class HBaseScheme extends HBaseAbstractScheme
           columns[ i + j ] = hbaseColumn( familyNames[ i ] ) + fields.get( j );
         }
       }
-
     return columns;
     }
 

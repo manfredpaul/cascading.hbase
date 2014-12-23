@@ -87,23 +87,19 @@ public abstract class TableInputFormatBase
    * @see org.apache.hadoop.mapred.InputFormat#getRecordReader(InputSplit,
    * JobConf, Reporter)
    */
-  public RecordReader<ImmutableBytesWritable, Result> getRecordReader(
-    InputSplit split, JobConf job, Reporter reporter )
-    throws IOException
+  public RecordReader<ImmutableBytesWritable, Result> getRecordReader( InputSplit split, JobConf job, Reporter reporter ) throws IOException
     {
     if( table == null )
-      {
       throw new IOException( "Cannot create a record reader because of a" +
         " previous error. Please look at the previous logs lines from" +
         " the task's full log for more details." );
-      }
+
     TableSplit tSplit = (TableSplit) split;
     TableRecordReader trr = this.tableRecordReader;
     // if no table record reader was provided use default
     if( trr == null )
-      {
       trr = new TableRecordReader();
-      }
+
     Scan sc = new Scan( this.scan );
     sc.setStartRow( tSplit.getStartRow() );
     sc.setStopRow( tSplit.getEndRow() );
@@ -131,9 +127,8 @@ public abstract class TableInputFormatBase
   public InputSplit[] getSplits( JobConf job, int numSplits ) throws IOException
     {
     if( table == null )
-      {
       throw new IOException( "No table was provided." );
-      }
+
     Pair<byte[][], byte[][]> keys = table.getStartEndKeys();
     if( keys == null || keys.getFirst() == null ||
       keys.getFirst().length == 0 )
@@ -145,11 +140,9 @@ public abstract class TableInputFormatBase
     for( int i = 0; i < keys.getFirst().length; i++ )
       {
       if( !includeRegionInSplit( keys.getFirst()[ i ], keys.getSecond()[ i ] ) )
-        {
         continue;
-        }
-      String regionLocation = table.getRegionLocation( keys.getFirst()[ i ] ).
-        getHostname();
+
+      String regionLocation = table.getRegionLocation( keys.getFirst()[ i ] ).getHostname();
       byte[] startRow = scan.getStartRow();
       byte[] stopRow = scan.getStopRow();
       // determine if the given start an stop key fall into the region

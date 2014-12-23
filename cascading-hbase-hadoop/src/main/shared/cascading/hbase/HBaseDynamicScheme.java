@@ -32,8 +32,7 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
   private Fields valueField;
   private String[] familyNames;
 
-  public HBaseDynamicScheme( Fields keyField, Fields valueField,
-                             String... familyNames )
+  public HBaseDynamicScheme( Fields keyField, Fields valueField, String... familyNames )
     {
     setSourceSink( keyField, valueField );
 
@@ -45,14 +44,9 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
     validate();
 
     if( valueField.size() != 1 )
-      {
-      throw new IllegalArgumentException(
-        "may only have one value field, found: "
-          + valueField.print() );
-      }
+      throw new IllegalArgumentException( "may only have one value field, found: " + valueField.print() );
     }
 
-  @SuppressWarnings("rawtypes")
   private String getTableFromTap( HBaseTap tap )
     {
     Path tapPath = tap.getPath();
@@ -68,35 +62,27 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
     }
 
   @Override
-  public void sourceConfInit(
-    FlowProcess<JobConf> flowProcess,
-    Tap<JobConf, RecordReader, OutputCollector> tap,
-    JobConf conf )
+  public void sourceConfInit( FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf )
     {
     setSourceInitFields( conf, " " );
     }
 
   @Override
-  public void sinkConfInit(
-    FlowProcess<JobConf> flowProcess,
-    Tap<JobConf, RecordReader, OutputCollector> tap,
-    JobConf conf )
+  public void sinkConfInit( FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap, JobConf conf )
     {
     setSinkInitFields( conf );
     conf.set( TableOutputFormat.OUTPUT_TABLE, getTableFromTap( (HBaseTap) tap ) );
     }
 
   @Override
-  public boolean source(
-    FlowProcess<JobConf> flowProcess,
-    SourceCall<Object[], RecordReader> sourceCall
-  ) throws IOException
+  public boolean source( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall ) throws IOException
     {
-
     Object key = sourceCall.getContext()[ 0 ];
     Object value = sourceCall.getContext()[ 1 ];
     boolean hasNext = sourceCall.getInput().next( key, value );
-    if( !hasNext ){ return false; }
+
+    if( !hasNext )
+       return false;
 
     Tuple result = sourceGetTuple( key );
     Result row = (Result) value;
@@ -108,10 +94,7 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
 
 
   @Override
-  public void sink(
-    FlowProcess<JobConf> flowProcess,
-    SinkCall<Object[], OutputCollector> sinkCall
-  ) throws IOException
+  public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
     {
 
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
