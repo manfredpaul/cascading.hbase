@@ -2,6 +2,7 @@ package cascading.hbase;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Properties;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
@@ -57,8 +58,9 @@ abstract public class HBaseTests
 
   public FlowConnector createHadoopFlowConnector( Map<Object, Object> props )
     {
-    Map<Object, Object> finalProperties = Maps.newHashMap( props );
-    finalProperties.put( HConstants.ZOOKEEPER_CLIENT_PORT, utility.getZkCluster().getClientPort() );
+    Map<Object, Object> finalProperties = new Properties();
+    finalProperties.putAll( props );
+    finalProperties.put( HConstants.ZOOKEEPER_CLIENT_PORT, String.valueOf( utility.getZkCluster().getClientPort() ) );
     AppProps.setApplicationName( finalProperties, getClass().getName() );
     return new HadoopFlowConnector( finalProperties );
     }
