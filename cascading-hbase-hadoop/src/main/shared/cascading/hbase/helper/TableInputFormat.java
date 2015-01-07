@@ -20,6 +20,7 @@
 
 package cascading.hbase.helper;
 
+import cascading.CascadingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -149,7 +150,7 @@ public class TableInputFormat extends TableInputFormatBase implements
         }
       catch( Exception e )
         {
-        LOG.error( StringUtils.stringifyException( e ) );
+        throw new CascadingException( e );
         }
       }
 

@@ -36,9 +36,8 @@ public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, 
 
   protected void setSourceInitFields( JobConf conf, String columns )
     {
-    JobConf jobconf = (JobConf) conf;
-    jobconf.set( "mapred.input.format.class", TableInputFormat.class.getName() );
-    jobconf.set( TableInputFormat.SCAN_COLUMNS, columns );
+    conf.set( "mapred.input.format.class", TableInputFormat.class.getName() );
+    conf.set( TableInputFormat.SCAN_COLUMNS, columns );
     }
 
   protected void setSinkInitFields( JobConf conf )

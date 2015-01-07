@@ -1,3 +1,4 @@
+
 package cascading.hbase;
 
 import cascading.cascade.Cascade;
@@ -28,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-@SuppressWarnings("rawtypes")
 public class HBaseStaticTest extends HBaseTestsStaticScheme
   {
 
@@ -43,26 +43,19 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
   @Test
   public void testHBaseMultiFamily() throws IOException
     {
-
-    Properties properties = new Properties();
-    AppProps.setApplicationJarClass( properties, HBaseStaticTest.class );
-
     deleteTable( configuration, "multitable" );
-
 
     // create flow to read from local file and insert into HBase
     Tap source = new Lfs( new TextLine(), inputFile );
 
     Pipe parsePipe = new Pipe( "parse" );
-    parsePipe = new Each( parsePipe, new Fields( "line" ), new RegexSplitter(
-      new Fields( "num", "lower", "upper" ), " " ) );
+    parsePipe = new Each( parsePipe, new Fields( "line" ), new RegexSplitter( new Fields( "num", "lower", "upper" ), " " ) );
 
     Fields keyFields = new Fields( "num" );
     String[] familyNames = {"left", "right"};
-    Fields[] valueFields = new Fields[]{new Fields( "lower" ),
-                                        new Fields( "upper" )};
-    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields,
-      familyNames, valueFields ), SinkMode.REPLACE );
+    Fields[] valueFields = new Fields[]{new Fields( "lower" ), new Fields( "upper" )};
+
+    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields, familyNames, valueFields ), SinkMode.REPLACE );
 
     FlowConnector flowConnector = createHadoopFlowConnector();
     Flow parseFlow = flowConnector.connect( source, hBaseTap, parsePipe );
@@ -72,8 +65,7 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
     verifySink( parseFlow, 5 );
 
     // create flow to read from hbase and save to local file
-    Tap sink = new Lfs( new TextLine(), "build/test/output/multifamily",
-      SinkMode.REPLACE );
+    Tap sink = new Lfs( new TextLine(), "build/test/output/multifamily", SinkMode.REPLACE );
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
@@ -85,28 +77,22 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
 
     }
 
+
   @Test
   public void testHBaseFilter() throws IOException
     {
-
-    Properties properties = new Properties();
-    AppProps.setApplicationJarClass( properties, HBaseStaticTest.class );
-
     deleteTable( configuration, "multitable" );
 
     // create flow to read from local file and insert into HBase
     Tap source = new Lfs( new TextLine(), inputFile );
 
     Pipe parsePipe = new Pipe( "parse" );
-    parsePipe = new Each( parsePipe, new Fields( "line" ), new RegexSplitter(
-            new Fields( "num", "lower", "upper" ), " " ) );
+    parsePipe = new Each( parsePipe, new Fields( "line" ), new RegexSplitter( new Fields( "num", "lower", "upper" ), " " ) );
 
     Fields keyFields = new Fields( "num" );
     String[] familyNames = {"left", "right"};
-    Fields[] valueFields = new Fields[]{new Fields( "lower" ),
-            new Fields( "upper" )};
-    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields,
-            familyNames, valueFields ), SinkMode.REPLACE );
+    Fields[] valueFields = new Fields[]{new Fields( "lower" ), new Fields( "upper" )};
+    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields, familyNames, valueFields ), SinkMode.REPLACE );
 
     FlowConnector flowConnector = createHadoopFlowConnector();
     Flow parseFlow = flowConnector.connect( source, hBaseTap, parsePipe );
@@ -121,8 +107,7 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
 
     Filter filter = new RowFilter(CompareFilter.CompareOp.EQUAL, new SubstringComparator("2"));
 
-    hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields,
-            familyNames, valueFields, filter));
+    hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields, familyNames, valueFields, filter));
 
     Pipe copyPipe = new Each( "read", new Identity() );
 
@@ -148,15 +133,13 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
     Tap source = new Lfs( new TextLine(), inputFile );
 
     Pipe parsePipe = new Pipe( "parse" );
-    parsePipe = new Each( parsePipe, new Fields( "line" ), new RegexSplitter(
-            new Fields( "num", "lower", "upper" ), " " ) );
+    parsePipe = new Each( parsePipe, new Fields( "line" ), new RegexSplitter( new Fields( "num", "lower", "upper" ), " " ) );
 
     Fields keyFields = new Fields( "num" );
     String[] familyNames = {"left", "right"};
     Fields[] valueFields = new Fields[]{new Fields( "lower" ),
               new Fields( "upper" )};
-    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields,
-              familyNames, valueFields ), SinkMode.REPLACE );
+    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields, familyNames, valueFields ), SinkMode.REPLACE );
 
     FlowConnector flowConnector = createHadoopFlowConnector();
     Flow parseFlow = flowConnector.connect( source, hBaseTap, parsePipe );
@@ -180,8 +163,7 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
 
     verifySink( copyFlow, 4 );
 
-    hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields,
-            familyNames, valueFields, Bytes.toBytes("2"), Bytes.toBytes("5")));
+    hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields, familyNames, valueFields, Bytes.toBytes("2"), Bytes.toBytes("5")));
 
     copyFlow = flowConnector.connect( hBaseTap, sink, copyPipe );
 
@@ -209,8 +191,7 @@ public class HBaseStaticTest extends HBaseTestsStaticScheme
     String[] familyNames = {"left", "right"};
     Fields[] valueFields = new Fields[]{new Fields( "lower" ),
                                         new Fields( "upper" )};
-    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields,
-      familyNames, valueFields ), SinkMode.UPDATE );
+    Tap hBaseTap = new HBaseTap( "multitable", new HBaseScheme( keyFields, familyNames, valueFields ), SinkMode.UPDATE );
 
     FlowConnector flowConnector = createHadoopFlowConnector();
     Flow parseFlow = flowConnector.connect( source, hBaseTap, parsePipe );

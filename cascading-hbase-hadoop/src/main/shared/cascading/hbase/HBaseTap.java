@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 
-import cascading.CascadingException;
 import cascading.flow.FlowProcess;
 import cascading.hbase.helper.TableInputFormat;
 import cascading.property.AppProps;
@@ -35,7 +34,6 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.security.User;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
@@ -226,7 +224,8 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   public void sourceConfInit( FlowProcess<JobConf> flowProcess, JobConf conf )
     {
     LOG.debug( "sourcing from table: {}", tableName );
-    FileInputFormat.addInputPaths( conf, tableName );
+    //FileInputFormat.addInputPaths( conf, tableName );
+    conf.setInputFormat( TableInputFormat.class );
     conf.set( TableInputFormat.INPUT_TABLE, tableName );
     obtainToken( conf );
     super.sourceConfInit( flowProcess, conf );

@@ -20,6 +20,7 @@ package cascading.hbase;
 
 import java.io.IOException;
 
+import cascading.CascadingException;
 import cascading.flow.FlowProcess;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.tap.Tap;
@@ -42,14 +43,13 @@ import org.slf4j.LoggerFactory;
 public class HBaseTapCollector extends TupleEntrySchemeCollector implements OutputCollector
   {
   /** Field LOG */
-  private static final Logger LOG = LoggerFactory
-    .getLogger( HBaseTapCollector.class );
+  private static final Logger LOG = LoggerFactory.getLogger( HBaseTapCollector.class );
   /** Field conf */
   private final JobConf conf;
   /** Field writer */
   private RecordWriter writer;
   /** Field flowProcess */
-  private final FlowProcess<JobConf> hadoopFlowProcess;
+  private final FlowProcess<JobConf> flowProcess;
   /** Field tap */
   private final Tap<JobConf, RecordReader, OutputCollector> tap;
   /** Field reporter */
@@ -65,7 +65,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
   public HBaseTapCollector( FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap ) throws IOException
     {
     super( flowProcess, tap.getScheme() );
-    this.hadoopFlowProcess = flowProcess;
+    this.flowProcess = flowProcess;
     this.tap = tap;
     this.conf = new JobConf( flowProcess.getConfigCopy() );
     this.setOutput( this );
@@ -80,7 +80,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
       }
     catch( IOException e )
       {
-      throw new RuntimeException( e );
+      throw new CascadingException( e );
       }
 
     super.prepare();
@@ -88,9 +88,9 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
 
   private void initialize() throws IOException
     {
-    tap.sinkConfInit( hadoopFlowProcess, conf );
+    tap.sinkConfInit( flowProcess, conf );
     OutputFormat outputFormat = conf.getOutputFormat();
-    LOG.info( "Output format class is: " + outputFormat.getClass().toString() );
+    LOG.debug( "Output format class is: " + outputFormat.getClass().toString() );
 
     writer = outputFormat.getRecordWriter( null, conf, tap.getIdentifier(), Reporter.NULL );
     sinkCall.setOutput( this );
@@ -101,7 +101,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
     {
     try
       {
-      LOG.info( "closing tap collector for: {}", tap );
+      LOG.debug( "closing tap collector for: {}", tap );
       writer.close( reporter );
       }
     catch( IOException exception )
@@ -126,8 +126,8 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
   public void collect( Object writableComparable, Object writable )
     throws IOException
     {
-    if( hadoopFlowProcess instanceof HadoopFlowProcess )
-      ( (HadoopFlowProcess) hadoopFlowProcess ).getReporter().progress();
+    if( flowProcess instanceof HadoopFlowProcess )
+      ( (HadoopFlowProcess) flowProcess ).getReporter().progress();
 
     writer.write( writableComparable, writable );
     }
