@@ -25,8 +25,9 @@ import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.property.AppProps;
+import cascading.util.Util;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseCommonTestingUtility;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.mapred.JobConf;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -82,7 +84,18 @@ public abstract class HBaseTests
     finalProperties.putAll( props );
     finalProperties.put( HConstants.ZOOKEEPER_CLIENT_PORT, String.valueOf( utility.getZkCluster().getClientPort() ) );
     AppProps.setApplicationName( finalProperties, getClass().getName() );
-    return new HadoopFlowConnector( finalProperties );
+
+    return newFlowConnector( finalProperties );
     }
+
+
+  private FlowConnector newFlowConnector( Map<Object, Object> properties)
+    {
+    if( HadoopUtil.isYARN( new JobConf( configuration ) ) )
+      return (FlowConnector) Util.newInstance( "cascading.flow.hadoop2.Hadoop2MR1FlowConnector", properties );
+
+    return (FlowConnector) Util.newInstance( "cascading.flow.hadoop.HadoopFlowConnector", properties );
+    }
+
 
   }
