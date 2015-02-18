@@ -26,6 +26,7 @@ import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tuple.TupleEntrySchemeCollector;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -47,9 +48,9 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
   /** Field conf */
   private final JobConf conf;
   /** Field flowProcess */
-  private final FlowProcess<JobConf> flowProcess;
+  private final FlowProcess<? extends Configuration> flowProcess;
   /** Field tap */
-  private final Tap<JobConf, RecordReader, OutputCollector> tap;
+  private final Tap<Configuration, RecordReader, OutputCollector> tap;
   /** Field reporter */
   private final Reporter reporter = Reporter.NULL;
   /** Field writer */
@@ -62,7 +63,7 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
    * @param tap         of type Tap
    * @throws IOException when fails to initialize
    */
-  public HBaseTapCollector( FlowProcess<JobConf> flowProcess, Tap<JobConf, RecordReader, OutputCollector> tap ) throws IOException
+  public HBaseTapCollector( FlowProcess<? extends Configuration> flowProcess, Tap<Configuration, RecordReader, OutputCollector> tap ) throws IOException
     {
     super( flowProcess, tap.getScheme() );
     this.flowProcess = flowProcess;

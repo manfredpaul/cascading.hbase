@@ -26,6 +26,7 @@ import cascading.tap.TapException;
 import cascading.tap.hadoop.io.HadoopTupleEntrySchemeIterator;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.TupleEntryIterator;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.security.Credentials;
@@ -48,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * the {@link HBaseScheme} to allow for the reading and writing
  * of data to and from a HBase cluster.
  */
-public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
+public class HBaseTap extends Tap<Configuration, RecordReader, OutputCollector>
   {
 
   static
@@ -139,21 +141,20 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public TupleEntryIterator openForRead( FlowProcess<JobConf> flowProcess, RecordReader input ) throws IOException
+  public TupleEntryIterator openForRead( FlowProcess<? extends Configuration> flowProcess, RecordReader input ) throws IOException
     {
     return new HadoopTupleEntrySchemeIterator( flowProcess, this, input );
     }
 
   @Override
-  public TupleEntryCollector openForWrite( FlowProcess<JobConf> flowProcess, OutputCollector output ) throws IOException
+  public TupleEntryCollector openForWrite( FlowProcess<? extends Configuration> flowProcess, OutputCollector output ) throws IOException
     {
-    HBaseTapCollector hBaseCollector = new HBaseTapCollector( flowProcess,
-      this );
+    HBaseTapCollector hBaseCollector = new HBaseTapCollector( flowProcess, this );
     hBaseCollector.prepare();
     return hBaseCollector;
     }
 
-  private HBaseAdmin getHBaseAdmin( JobConf conf ) throws IOException
+  private HBaseAdmin getHBaseAdmin( Configuration conf ) throws IOException
     {
     Thread.currentThread().setContextClassLoader( HBaseConfiguration.class.getClassLoader() );
     if( hBaseAdmin == null )
@@ -161,17 +162,18 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     return hBaseAdmin;
     }
 
-  private void obtainToken( JobConf conf )
+  private void obtainToken( Configuration conf )
     {
     if( User.isHBaseSecurityEnabled( conf ) )
       {
-      String user = conf.getUser();
+      JobConf jobConf = new JobConf( conf );
+      String user = jobConf.getUser();
       LOG.info( "obtaining HBase token for: {}", user );
       try
         {
         UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
         user = currentUser.getUserName();
-        Credentials credentials = conf.getCredentials();
+        Credentials credentials = jobConf.getCredentials();
         for( Token token : currentUser.getTokens() )
           {
           LOG.debug( "Token {} is available", token );
@@ -187,18 +189,20 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     }
 
-  public boolean resourceExists( JobConf conf ) throws IOException
+  @Override
+  public boolean resourceExists( Configuration conf ) throws IOException
     {
     return getHBaseAdmin( conf ).tableExists( tableName );
     }
 
-  public long getModifiedTime( JobConf conf ) throws IOException
+  @Override
+  public long getModifiedTime( Configuration conf ) throws IOException
     {
     return System.currentTimeMillis(); // currently unable to find last mod time on a table
     }
 
   @Override
-  public void sinkConfInit( FlowProcess<JobConf> flowProcess, JobConf conf )
+  public void sinkConfInit( FlowProcess<? extends Configuration> flowProcess, Configuration conf )
     {
     LOG.debug( "sinking to table: {}", tableName );
     obtainToken( conf );
@@ -216,11 +220,10 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public void sourceConfInit( FlowProcess<JobConf> flowProcess, JobConf conf )
+  public void sourceConfInit( FlowProcess<? extends Configuration> flowProcess, Configuration conf )
     {
     LOG.debug( "sourcing from table: {}", tableName );
-    //FileInputFormat.addInputPaths( conf, tableName );
-    conf.setInputFormat( TableInputFormat.class );
+    conf.set( "mapred.input.format.class", TableInputFormat.class.getName() );
     conf.set( TableInputFormat.INPUT_TABLE, tableName );
     obtainToken( conf );
     super.sourceConfInit( flowProcess, conf );
@@ -261,7 +264,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public boolean createResource( JobConf conf ) throws IOException
+  public boolean createResource( Configuration conf ) throws IOException
     {
     HBaseAdmin hBaseAdmin = getHBaseAdmin( conf );
     if( hBaseAdmin.tableExists( tableName ) )
@@ -281,7 +284,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     }
 
   @Override
-  public boolean deleteResource( JobConf conf ) throws IOException
+  public boolean deleteResource( Configuration conf ) throws IOException
     {
     try
       {

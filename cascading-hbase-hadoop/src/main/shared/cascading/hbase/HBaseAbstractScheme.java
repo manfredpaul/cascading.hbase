@@ -1,5 +1,7 @@
 package cascading.hbase;
 
+import java.io.IOException;
+
 import cascading.flow.FlowProcess;
 import cascading.hbase.helper.TableInputFormat;
 import cascading.scheme.Scheme;
@@ -7,15 +9,16 @@ import cascading.scheme.SourceCall;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
 
-public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, OutputCollector, Object[], Object[]>
+public abstract class HBaseAbstractScheme extends Scheme<Configuration, RecordReader, OutputCollector, Object[], Object[]>
   {
   /** Field keyFields */
   protected Fields keyField;
@@ -34,17 +37,17 @@ public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, 
     setSinkFields( allFields );
     }
 
-  protected void setSourceInitFields( JobConf conf, String columns )
+  protected void setSourceInitFields( Configuration conf, String columns )
     {
     conf.set( "mapred.input.format.class", TableInputFormat.class.getName() );
     conf.set( TableInputFormat.SCAN_COLUMNS, columns );
     }
 
-  protected void setSinkInitFields( JobConf conf )
+  protected void setSinkInitFields( Configuration conf )
     {
     conf.set( "mapred.output.format.class", TableOutputFormat.class.getName() );
-    conf.setOutputKeyClass( ImmutableBytesWritable.class );
-    conf.setOutputValueClass( Put.class );
+    conf.set( "mapred.mapoutput.key.class", ImmutableBytesWritable.class.getName() );
+    conf.set( "mapred.mapoutput.value.class", Put.class.getName() );
     }
 
   protected Tuple sourceGetTuple( Object key )
@@ -69,7 +72,7 @@ public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, 
   public abstract String[] getFamilyNames();
 
   @Override
-  public void sourcePrepare( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
+  public void sourcePrepare( FlowProcess<? extends Configuration> flowProcess, SourceCall<Object[], RecordReader> sourceCall ) throws IOException
     {
     Object[] pair = new Object[]{sourceCall.getInput().createKey(), sourceCall.getInput().createValue()};
 
@@ -77,7 +80,7 @@ public abstract class HBaseAbstractScheme extends Scheme<JobConf, RecordReader, 
     }
 
   @Override
-  public void sourceCleanup( FlowProcess<JobConf> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
+  public void sourceCleanup( FlowProcess<? extends Configuration> flowProcess, SourceCall<Object[], RecordReader> sourceCall )
     {
     sourceCall.setContext( null );
     }
