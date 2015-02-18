@@ -46,14 +46,14 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
   private static final Logger LOG = LoggerFactory.getLogger( HBaseTapCollector.class );
   /** Field conf */
   private final JobConf conf;
-  /** Field writer */
-  private RecordWriter writer;
   /** Field flowProcess */
   private final FlowProcess<JobConf> flowProcess;
   /** Field tap */
   private final Tap<JobConf, RecordReader, OutputCollector> tap;
   /** Field reporter */
   private final Reporter reporter = Reporter.NULL;
+  /** Field writer */
+  private RecordWriter writer;
 
   /**
    * Constructor TapCollector creates a new TapCollector instance.

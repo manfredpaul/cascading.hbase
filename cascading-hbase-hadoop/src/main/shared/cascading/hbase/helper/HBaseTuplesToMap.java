@@ -33,37 +33,10 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class HBaseTuplesToMap extends BaseOperation<HBaseTuplesToMap.AggregatorWriterTuplesListContext> implements Aggregator<HBaseTuplesToMap.AggregatorWriterTuplesListContext>
   {
-  static class AggregatorWriterTuplesListContext
-    {
-    public NavigableMap<byte[], NavigableMap<byte[], byte[]>> keyValueMap =
-      new TreeMap<byte[], NavigableMap<byte[], byte[]>>( Bytes.BYTES_COMPARATOR );
-
-    public String key;
-
-    public void addElements( byte[] cf, byte[] column, byte[] value )
-      {
-      try
-        {
-        keyValueMap.get( cf ).put( column, value );
-        }
-      catch( NullPointerException exeption )
-        {
-        if( null != cf )
-          {
-          keyValueMap.put( cf, new TreeMap<byte[], byte[]>(
-            Bytes.BYTES_COMPARATOR ) );
-          addElements( cf, column, value );
-          }
-        }
-      }
-
-    }
-
   private Fields rowField;
   private Fields columnField;
   private Fields valueField;
   private Fields cfName;
-
   public HBaseTuplesToMap( Fields declaredFields, Fields cfName, Fields rowField, Fields columnField, Fields valueField )
     {
     super( declaredFields );
@@ -105,5 +78,31 @@ public class HBaseTuplesToMap extends BaseOperation<HBaseTuplesToMap.AggregatorW
   public void complete( FlowProcess flowProcess, AggregatorCall<HBaseTuplesToMap.AggregatorWriterTuplesListContext> aggregatorCall )
     {
     aggregatorCall.getOutputCollector().add( new Tuple( aggregatorCall.getContext().key, aggregatorCall.getContext().keyValueMap ) );
+    }
+
+  static class AggregatorWriterTuplesListContext
+    {
+    public NavigableMap<byte[], NavigableMap<byte[], byte[]>> keyValueMap =
+      new TreeMap<byte[], NavigableMap<byte[], byte[]>>( Bytes.BYTES_COMPARATOR );
+
+    public String key;
+
+    public void addElements( byte[] cf, byte[] column, byte[] value )
+      {
+      try
+        {
+        keyValueMap.get( cf ).put( column, value );
+        }
+      catch( NullPointerException exeption )
+        {
+        if( null != cf )
+          {
+          keyValueMap.put( cf, new TreeMap<byte[], byte[]>(
+            Bytes.BYTES_COMPARATOR ) );
+          addElements( cf, column, value );
+          }
+        }
+      }
+
     }
   }

@@ -50,9 +50,10 @@ import org.slf4j.LoggerFactory;
  */
 public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
   {
+
   static
     {
-    // add cascading-jdbc release to frameworks
+    // add cascading-hbase release to frameworks
     Properties properties = new Properties();
     InputStream stream = HBaseTap.class.getClassLoader().getResourceAsStream( "cascading/framework.properties" );
     if( stream != null )
@@ -71,17 +72,13 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     AppProps.addApplicationFramework( null, framework );
     }
 
-  /** Field LOG */
-  private static final Logger LOG = LoggerFactory.getLogger( HBaseTap.class );
-
   /** Field SCHEME */
   public static final String SCHEME = "hbase";
-
+  /** Field LOG */
+  private static final Logger LOG = LoggerFactory.getLogger( HBaseTap.class );
+  private final String id = UUID.randomUUID().toString();
   /** Field hBaseAdmin */
   private transient HBaseAdmin hBaseAdmin;
-
-  private final String id = UUID.randomUUID().toString();
-
   private String tableName;
 
   private int uniqueId;
@@ -135,7 +132,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
     this.tableName = tableName;
     this.uniqueId = uniqueId;
     }
-
 
   public Path getPath()
     {
@@ -191,7 +187,6 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     }
 
-
   public boolean resourceExists( JobConf conf ) throws IOException
     {
     return getHBaseAdmin( conf ).tableExists( tableName );
@@ -213,7 +208,7 @@ public class HBaseTap extends Tap<JobConf, RecordReader, OutputCollector>
       }
     catch( IOException e )
       {
-      throw new RuntimeException( "failed to create table '" + tableName + "'", e);
+      throw new RuntimeException( "failed to create table '" + tableName + "'", e );
       }
 
     conf.set( TableOutputFormat.OUTPUT_TABLE, tableName );

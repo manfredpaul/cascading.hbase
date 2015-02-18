@@ -57,13 +57,13 @@ allprojects {
 
   repositories {
     mavenCentral()
-    maven{ url 'http://conjars.org/repo/' }
-    maven{ url 'https://repository.apache.org/content/repositories/releases/' }
+    maven { url 'http://conjars.org/repo/' }
+    maven { url 'https://repository.apache.org/content/repositories/releases/' }
   }
   version = releaseVersion
 }
 
-subprojects{
+subprojects {
   configurations {
     testArtifacts {
       extendsFrom testRuntime
@@ -115,7 +115,7 @@ subprojects{
 
   task createFrameworkProperties( dependsOn: processResources ) << {
     file( "${sourceSets.main.output.resourcesDir}/cascading" ).mkdirs()
-    file( "${sourceSets.main.output.resourcesDir}/cascading/framework.properties").write("name=${project.name}:${version}\n" )
+    file( "${sourceSets.main.output.resourcesDir}/cascading/framework.properties" ).write( "name=${project.name}:${version}\n" )
   }
 
   jar.dependsOn( createFrameworkProperties )

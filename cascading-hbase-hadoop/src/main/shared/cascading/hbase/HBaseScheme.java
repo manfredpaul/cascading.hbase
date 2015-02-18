@@ -42,13 +42,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The HBaseScheme class is a {@link Scheme} subclass. It is used in conjunction
- * with the {@link HBaseTap} to allow for the reading and writing of data
- * to and from a HBase cluster.
+ * The HBaseScheme class is a {@link Scheme} subclass. It is used in conjunction  with the {@link HBaseTap} to allow
+ * for the reading and writing of data to and from a HBase cluster.
  *
  * @see HBaseTap
  */
-@SuppressWarnings("serial")
 public class HBaseScheme extends HBaseAbstractScheme
   {
   /** Field LOG */
@@ -200,7 +198,7 @@ public class HBaseScheme extends HBaseAbstractScheme
    * @param valueFields of type Fields[]
    * @param startRow    of type byte[]
    */
-  public HBaseScheme( Fields keyFields, String[] familyNames,  Fields[] valueFields, byte[] startRow )
+  public HBaseScheme( Fields keyFields, String[] familyNames, Fields[] valueFields, byte[] startRow )
     {
     this.keyField = keyFields;
     // The column Names only holds the family Names.
@@ -287,7 +285,6 @@ public class HBaseScheme extends HBaseAbstractScheme
 
     return true;
     }
-
 
   @Override
   public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
@@ -392,7 +389,6 @@ public class HBaseScheme extends HBaseAbstractScheme
       }
     return columns;
     }
-
 
   private String hbaseColumn( String column )
     {

@@ -33,37 +33,30 @@ import org.slf4j.LoggerFactory;
 import static cascading.hbase.helper.Utils.throwIfNullOrEmpty;
 
 /**
- * {@link HBaseFactory} is a lingual compliant provider factory. It makes it
- * possible to talk to HBase via lingual. The factory creates
- * {@link HBaseScheme} intances, that can only talk to one column family at a
- * time. This is done to have an easy way to translate the data to the SQL
- * semantics of lingual.
+ * {@link HBaseFactory} is a lingual compliant provider factory. It makes it possible to talk to HBase via Lingual.
+ * The factory creates {@link HBaseScheme} intances, that can only talk to one column family at a time. This is done to
+ * have an easy way to translate the data to the SQL semantics of lingual.
  */
 public class HBaseFactory
   {
+  /** the name of the protocol */
+  public static final String PROTOCOL_NAME = "hbase";
+  /** the name of the format */
+  public static final String FORMAT_NAME = "hbase";
+  /** property containing the column family */
+  public static final String FORMAT_COLUMN_FAMILY = "family";
+
   /**
    * LOGGER
    */
   private static final Logger LOG = LoggerFactory.getLogger( HBaseFactory.class );
 
-  /** the name of the protocol */
-  public static final String PROTOCOL_NAME = "hbase";
-
-  /** the name of the format */
-  public static final String FORMAT_NAME = "hbase";
-
-  /** property containing the column family */
-  public static final String FORMAT_COLUMN_FAMILY = "family";
-
   /**
-   * Creates a new {@link Tap} for the given protocol, scheme, identifier and
-   * properties.
+   * Creates a new {@link Tap} for the given protocol, scheme, identifier and properties.
    *
    * @param protocol   has to be "hbase".
-   * @param scheme     a scheme instance, which has to be of type
-   *                   {@link HBaseScheme}.
-   * @param identifier The identifier of the hbase tap, which is typically the
-   *                   table name.
+   * @param scheme     a scheme instance, which has to be of type  {@link HBaseScheme}.
+   * @param identifier The identifier of the hbase tap, which is typically the table name.
    * @param mode       The sinkMode in which the Tap is used.
    * @param properties A properties object. Currently ignored.
    * @return a new {@link HBaseTap}
@@ -74,20 +67,19 @@ public class HBaseFactory
       throw new IllegalArgumentException( String.format( "invalid protocol '%s', only '%s' is supported. ", protocol, PROTOCOL_NAME ) );
 
     LOG.debug( "creating HBaseTap with identifier={} in mode={}", identifier, mode );
+
     return new HBaseTap( identifier, ( (HBaseScheme) scheme ), mode, 0 );
     }
 
   /**
-   * Creates a new {@link HBaseScheme} for the given format, fields and
-   * properties. The {@link Fields} instance has to have at least a size of 2.
-   * The first field is used for the rowkey in HBase, all other fields are used
-   * for qualifiers in the table. The column family to use has to be given via
-   * the properties instance.
+   * Creates a new {@link HBaseScheme} for the given format, fields and properties. The {@link Fields} instance has to
+   * have at least a size of 2. The first field is used for the rowkey in HBase, all other fields are used as qualifiers
+   * in the table. The column family to use has to be given via the properties instance.
    *
    * @param format     only 'hbase' is supported
    * @param fields     a fields instance with at least 2 fields.
-   * @param properties a {@link Properties} instance containing the column
-   *                   family to use. (see {@link HBaseFactory#FORMAT_COLUMN_FAMILY}.
+   * @param properties a {@link Properties} instance containing the column family to use.
+   *                   (see {@link HBaseFactory#FORMAT_COLUMN_FAMILY}.
    * @return a new {@link HBaseScheme} instance.
    */
   public Scheme createScheme( String format, Fields fields, Properties properties )
@@ -110,11 +102,13 @@ public class HBaseFactory
     // the rest is treated as qualifiers
     Comparable[] cmps = new Comparable[ fields.size() - 1 ];
     Type[] types = new Type[ fields.size() - 1 ];
+
     for( int i = 1; i < fields.size(); i++ )
       {
       cmps[ i - 1 ] = fields.get( i );
       types[ i - 1 ] = fields.getType( i );
       }
+
     return new HBaseScheme( keyFields, familyProperty, new Fields( cmps, types ) );
     }
 

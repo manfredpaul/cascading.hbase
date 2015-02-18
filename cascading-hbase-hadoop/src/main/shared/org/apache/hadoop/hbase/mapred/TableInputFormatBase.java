@@ -66,8 +66,7 @@ import org.apache.hadoop.mapred.Reporter;
  */
 
 @Deprecated
-public abstract class TableInputFormatBase
-  implements InputFormat<ImmutableBytesWritable, Result>
+public abstract class TableInputFormatBase implements InputFormat<ImmutableBytesWritable, Result>
   {
   final Log LOG = LogFactory.getLog( TableInputFormatBase.class );
   private byte[][] inputColumns;
@@ -122,7 +121,6 @@ public abstract class TableInputFormatBase
     byte[][] startKeys = this.table.getStartKeys();
     if( startKeys == null || startKeys.length == 0 )
       throw new IOException( "Expecting at least one region" );
-
 
     int realNumSplits = numSplits > startKeys.length ? startKeys.length : numSplits;
 

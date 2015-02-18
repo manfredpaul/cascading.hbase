@@ -19,16 +19,9 @@ import org.apache.hadoop.hbase.mapreduce.TableOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.RecordReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("serial")
 public class HBaseDynamicScheme extends HBaseAbstractScheme
   {
-  /** Field LOG */
-  private static final Logger LOG = LoggerFactory
-    .getLogger( HBaseDynamicScheme.class );
-
   private Fields valueField;
   private String[] familyNames;
 
@@ -82,7 +75,7 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
     boolean hasNext = sourceCall.getInput().next( key, value );
 
     if( !hasNext )
-       return false;
+      return false;
 
     Tuple result = sourceGetTuple( key );
     Result row = (Result) value;
@@ -92,19 +85,16 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
     return true;
     }
 
-
   @Override
   public void sink( FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall ) throws IOException
     {
-
     TupleEntry tupleEntry = sinkCall.getOutgoingEntry();
 
     Put put = sinkGetPut( tupleEntry );
 
     Tuple valueTuple = tupleEntry.selectTuple( valueField );
     NavigableMap<byte[], NavigableMap<byte[], byte[]>> values =
-      (NavigableMap<byte[], NavigableMap<byte[], byte[]>>)
-        valueTuple.getObject( 0 );
+      (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) valueTuple.getObject( 0 );
 
     for( Entry<byte[], NavigableMap<byte[], byte[]>> keyValue : values
       .entrySet() )
@@ -112,24 +102,21 @@ public class HBaseDynamicScheme extends HBaseAbstractScheme
       for( Entry<byte[], byte[]> value : keyValue.getValue().entrySet() )
         {
         put.add(
-          check_null( keyValue.getKey() ),
-          check_null( value.getKey() ),
-          check_null( value.getValue() )
+          nullValue( keyValue.getKey() ),
+          nullValue( value.getKey() ),
+          nullValue( value.getValue() )
         );
         }
       }
 
     OutputCollector collector = sinkCall.getOutput();
     collector.collect( null, put );
-
     }
 
-  private byte[] check_null( byte[] in )
+  private byte[] nullValue( byte[] in )
     {
     if( null == in )
-      {
       return HConstants.EMPTY_BYTE_ARRAY;
-      }
     else
       return in;
     }

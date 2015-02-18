@@ -25,10 +25,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.util.HadoopUtil;
 import cascading.hbase.helper.FlowConnectorFactory;
 import cascading.property.AppProps;
-import cascading.util.Util;
 import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseCommonTestingUtility;
@@ -36,7 +34,6 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.mapred.JobConf;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -59,13 +56,13 @@ public abstract class HBaseTests
 
   protected static void deleteTable( Configuration configuration, String tableName ) throws IOException
     {
-    HBaseAdmin hbase = new HBaseAdmin( configuration );
-    if( hbase.tableExists( Bytes.toBytes( tableName ) ) )
+    HBaseAdmin hbaseAdmin = new HBaseAdmin( configuration );
+    if( hbaseAdmin.tableExists( Bytes.toBytes( tableName ) ) )
       {
-      hbase.disableTable( Bytes.toBytes( tableName ) );
-      hbase.deleteTable( Bytes.toBytes( tableName ) );
+      hbaseAdmin.disableTable( Bytes.toBytes( tableName ) );
+      hbaseAdmin.deleteTable( Bytes.toBytes( tableName ) );
       }
-    hbase.close();
+    hbaseAdmin.close();
     }
 
   @AfterClass
@@ -86,13 +83,7 @@ public abstract class HBaseTests
     finalProperties.put( HConstants.ZOOKEEPER_CLIENT_PORT, String.valueOf( utility.getZkCluster().getClientPort() ) );
     AppProps.setApplicationName( finalProperties, getClass().getName() );
 
-    return newFlowConnector( finalProperties );
-    }
-
-
-  private FlowConnector newFlowConnector( Map<Object, Object> properties)
-    {
-    return FlowConnectorFactory.createFlowConnector( properties );
+    return FlowConnectorFactory.createFlowConnector( finalProperties );
     }
 
   }

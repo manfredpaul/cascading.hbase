@@ -29,7 +29,7 @@ sourceSets {
     java {
       srcDirs += 'src/test/shared'
     }
-    resources{
+    resources {
       srcDirs += 'src/test/shared-ressources'
     }
   }

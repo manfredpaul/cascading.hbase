@@ -30,7 +30,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.util.Writables;
 import org.apache.hadoop.util.StringUtils;
 
 
@@ -152,9 +151,8 @@ public class TableRecordReaderImpl
           " why it's taking so long." );
         }
       if( lastSuccessfulRow == null )
-        {
         restart( scan.getStartRow() );
-        }
+
       else
         {
         restart( lastSuccessfulRow );
@@ -170,6 +168,7 @@ public class TableRecordReaderImpl
       value.copyFrom(result);
       return true;
       }
+
     return false;
     }
   }

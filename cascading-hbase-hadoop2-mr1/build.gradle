@@ -30,16 +30,16 @@ ext.hadoopVersion = '2.4.1'
 dependencies {
 
   compile( group: 'org.apache.hbase', name: 'hbase-client', version: hbaseVersion ) {
-      exclude group: 'org.apache.hadoop'
+    exclude group: 'org.apache.hadoop'
   }
   compile( group: 'org.apache.hbase', name: 'hbase-server', version: hbaseVersion ) {
-      exclude group: 'org.apache.hadoop'
+    exclude group: 'org.apache.hadoop'
   }
   compile( group: 'org.apache.hbase', name: 'hbase-common', version: hbaseVersion ) {
-      exclude group: 'org.apache.hadoop'
+    exclude group: 'org.apache.hadoop'
   }
   compile( group: 'org.apache.hbase', name: 'hbase-hadoop2-compat', version: hbaseVersion ) {
-      exclude group: 'org.apache.hadoop'
+    exclude group: 'org.apache.hadoop'
   }
 
   compile group: 'xerces', name: 'xercesImpl', version: '2.9.1'

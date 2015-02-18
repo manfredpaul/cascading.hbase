@@ -20,6 +20,8 @@
 
 package cascading.hbase.helper;
 
+import java.io.IOException;
+
 import cascading.CascadingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,21 +41,16 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobConfigurable;
 import org.apache.hadoop.util.StringUtils;
 
-import java.io.IOException;
-
 /**
  * Convert HBase tabular data into a format that is consumable by Map/Reduce.
  */
 public class TableInputFormat extends TableInputFormatBase implements
   JobConfigurable
   {
-  private final Log LOG = LogFactory.getLog( TableInputFormat.class );
-
   /**
    * space delimited list of columns
    */
   public static final String COLUMN_LIST = "hbase.mapred.tablecolumns";
-
   /** Job parameter that specifies the input table. */
   public static final String INPUT_TABLE = "hbase.mapreduce.inputtable";
   /**
@@ -81,8 +78,109 @@ public class TableInputFormat extends TableInputFormatBase implements
   public static final String SCAN_ROW_START = "hbase.mapreduce.scan.row.start";
   /** Scan stop row */
   public static final String SCAN_ROW_STOP = "hbase.mapreduce.scan.row.stop";
-
   public static final String SCAN_FILTER = "hbase.mapreduce.scan.filter";
+  private final Log LOG = LogFactory.getLog( TableInputFormat.class );
+
+  /**
+   * Parses a combined family and qualifier and adds either both or just the
+   * family in case there is not qualifier. This assumes the older colon
+   * divided notation, e.g. "data:contents" or "meta:".
+   * <p/>
+   * Note: It will through an error when the colon is missing.
+   *
+   * @param familyAndQualifier family and qualifier
+   * @return A reference to this instance.
+   * @throws IllegalArgumentException When the colon is missing.
+   */
+  private static void addColumn( Scan scan, byte[] familyAndQualifier )
+    {
+    byte[][] fq = KeyValue.parseColumn( familyAndQualifier );
+    if( fq.length > 1 && fq[ 1 ] != null && fq[ 1 ].length > 0 )
+      scan.addColumn( fq[ 0 ], fq[ 1 ] );
+    else
+      scan.addFamily( fq[ 0 ] );
+    }
+
+  /**
+   * Adds an array of columns specified using old format, family:qualifier.
+   * <p/>
+   * Overrides previous calls to addFamily for any families in the input.
+   *
+   * @param columns array of columns, formatted as <pre>family:qualifier</pre>
+   */
+  public static void addColumns( Scan scan, byte[][] columns )
+    {
+    for( byte[] column : columns )
+      addColumn( scan, column );
+    }
+
+  /**
+   * Convenience method to help parse old style (or rather user entry on the
+   * command line) column definitions, e.g. "data:contents mime:". The columns
+   * must be space delimited and always have a colon (":") to denote family
+   * and qualifier.
+   *
+   * @param columns The columns to parse.
+   * @return A reference to this instance.
+   */
+  private static void addColumns( Scan scan, String columns )
+    {
+    String[] cols = columns.split( " " );
+    for( String col : cols )
+      addColumn( scan, Bytes.toBytes( col ) );
+    }
+
+  /**
+   * Writes the given scan into a Base64 encoded string.
+   *
+   * @param scan The scan to write out.
+   * @return The scan saved in a Base64 encoded string.
+   * @throws IOException When writing the scan fails.
+   */
+  public static String convertScanToString( Scan scan ) throws IOException
+    {
+    ClientProtos.Scan proto = ProtobufUtil.toScan( scan );
+    return Base64.encodeBytes( proto.toByteArray() );
+    }
+
+  /**
+   * Writes the given filter into a Base64 encoded string.
+   *
+   * @param filter The filter to write out.
+   * @return The filter saved in a Base64 encoded string.
+   * @throws IOException When writing the filter fails.
+   */
+  public static String convertFilterToString( Filter filter ) throws IOException
+    {
+    FilterProtos.Filter proto = ProtobufUtil.toFilter( filter );
+    return Base64.encodeBytes( proto.toByteArray() );
+    }
+
+  /**
+   * Converts the given Base64 string back into a Scan instance.
+   *
+   * @param base64 The scan details.
+   * @return The newly created Scan instance.
+   * @throws IOException When reading the scan instance fails.
+   */
+  public static Scan convertStringToScan( String base64 ) throws IOException
+    {
+    ClientProtos.Scan protoScan = ClientProtos.Scan.parseFrom( Base64.decode( base64 ) );
+    return ProtobufUtil.toScan( protoScan );
+    }
+
+  /**
+   * Converts the given Base64 string back into a Filter instance.
+   *
+   * @param base64 The filter details.
+   * @return The newly created Filter instance.
+   * @throws IOException When reading the filter instance fails.
+   */
+  public static Filter convertStringToFilter( String base64 ) throws IOException
+    {
+    FilterProtos.Filter protoFilter = FilterProtos.Filter.parseFrom( Base64.decode( base64 ));
+    return ProtobufUtil.toFilter( protoFilter );
+    }
 
   @Override
   public void configure( JobConf job )
@@ -157,55 +255,6 @@ public class TableInputFormat extends TableInputFormatBase implements
     setScan( scan );
     }
 
-  /**
-   * Parses a combined family and qualifier and adds either both or just the
-   * family in case there is not qualifier. This assumes the older colon
-   * divided notation, e.g. "data:contents" or "meta:".
-   * <p/>
-   * Note: It will through an error when the colon is missing.
-   *
-   * @param familyAndQualifier family and qualifier
-   * @return A reference to this instance.
-   * @throws IllegalArgumentException When the colon is missing.
-   */
-  private static void addColumn( Scan scan, byte[] familyAndQualifier )
-    {
-    byte[][] fq = KeyValue.parseColumn( familyAndQualifier );
-    if( fq.length > 1 && fq[ 1 ] != null && fq[ 1 ].length > 0 )
-      scan.addColumn( fq[ 0 ], fq[ 1 ] );
-    else
-      scan.addFamily( fq[ 0 ] );
-    }
-
-  /**
-   * Adds an array of columns specified using old format, family:qualifier.
-   * <p/>
-   * Overrides previous calls to addFamily for any families in the input.
-   *
-   * @param columns array of columns, formatted as <pre>family:qualifier</pre>
-   */
-  public static void addColumns( Scan scan, byte[][] columns )
-    {
-    for( byte[] column : columns )
-      addColumn( scan, column );
-    }
-
-  /**
-   * Convenience method to help parse old style (or rather user entry on the
-   * command line) column definitions, e.g. "data:contents mime:". The columns
-   * must be space delimited and always have a colon (":") to denote family
-   * and qualifier.
-   *
-   * @param columns The columns to parse.
-   * @return A reference to this instance.
-   */
-  private static void addColumns( Scan scan, String columns )
-    {
-    String[] cols = columns.split( " " );
-    for( String col : cols )
-      addColumn( scan, Bytes.toBytes( col ) );
-    }
-
   public void validateInput( JobConf job ) throws IOException
     {
     // expecting exactly one path
@@ -221,57 +270,5 @@ public class TableInputFormat extends TableInputFormatBase implements
     String colArg = job.get( COLUMN_LIST );
     if( colArg == null || colArg.length() == 0 )
       throw new IOException( "expecting at least one column" );
-    }
-
-  /**
-   * Writes the given scan into a Base64 encoded string.
-   *
-   * @param scan The scan to write out.
-   * @return The scan saved in a Base64 encoded string.
-   * @throws IOException When writing the scan fails.
-   */
-  public static String convertScanToString( Scan scan ) throws IOException
-    {
-    ClientProtos.Scan proto = ProtobufUtil.toScan( scan );
-    return Base64.encodeBytes( proto.toByteArray() );
-    }
-
-  /**
-   * Writes the given filter into a Base64 encoded string.
-   *
-   * @param filter The filter to write out.
-   * @return The filter saved in a Base64 encoded string.
-   * @throws IOException When writing the filter fails.
-   */
-  public static String convertFilterToString( Filter filter ) throws IOException
-    {
-    FilterProtos.Filter proto = ProtobufUtil.toFilter( filter );
-    return Base64.encodeBytes( proto.toByteArray() );
-    }
-
-  /**
-   * Converts the given Base64 string back into a Scan instance.
-   *
-   * @param base64 The scan details.
-   * @return The newly created Scan instance.
-   * @throws IOException When reading the scan instance fails.
-   */
-  public static Scan convertStringToScan( String base64 ) throws IOException
-    {
-    ClientProtos.Scan protoScan = ClientProtos.Scan.parseFrom( Base64.decode( base64 ) );
-    return ProtobufUtil.toScan( protoScan );
-    }
-
-  /**
-   * Converts the given Base64 string back into a Filter instance.
-   *
-   * @param base64 The filter details.
-   * @return The newly created Filter instance.
-   * @throws IOException When reading the filter instance fails.
-   */
-  public static Filter convertStringToFilter( String base64 ) throws IOException
-    {
-    FilterProtos.Filter protoFilter = FilterProtos.Filter.parseFrom( Base64.decode( base64 ));
-    return ProtobufUtil.toFilter( protoFilter );
     }
   }

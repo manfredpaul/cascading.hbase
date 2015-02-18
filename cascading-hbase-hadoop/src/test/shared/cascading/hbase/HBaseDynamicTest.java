@@ -73,27 +73,27 @@ public class HBaseDynamicTest extends HBaseTests
     Log.info( "created table: {} with cf: {}", TEST_TABLE, TEST_CF );
     }
 
-  static public class StringAppender extends BaseOperation<Void> implements Function<Void>
+  static private boolean isSameValue( String row, String cf, String column, String value, int size, TupleEntry entry )
     {
+    if( !entry.getString( 0 ).equals( row ) )
+      return false;
 
-    public StringAppender( Fields declaredFields )
-      {
-      super( declaredFields );
-      }
+    NavigableMap<byte[], NavigableMap<byte[], byte[]>> mapmap = (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) entry.getObject( 1 );
 
-    @Override
-    public void operate( FlowProcess flowProcess, FunctionCall<Void> functionCall )
-      {
-      StringBuffer stringBuffer = new StringBuffer();
-      for( int i = 0; i < functionCall.getArgumentFields().size(); i++ )
-        {
-        stringBuffer.append( functionCall.getArgumentFields().get( i ).toString() ).
-          append( ":" ).append( functionCall.getArguments().getString( functionCall.getArgumentFields().get( i ) )).append( " " ) ;
-        }
+    if( !mapmap.containsKey( Bytes.toBytes( cf ) ) )
+      return false;
 
-      functionCall.getOutputCollector().add( new Tuple( stringBuffer.toString() ) );
+    NavigableMap<byte[], byte[]> map = mapmap.get( Bytes.toBytes( cf ) );
 
-      }
+    if( map.size() != size )
+      return false;
+
+    if( !map.containsKey( Bytes.toBytes( column ) ) )
+      return false;
+
+    byte[] mapValue = map.get( Bytes.toBytes( column ) );
+
+    return Arrays.equals( mapValue, Bytes.toBytes( value ) );
     }
 
   @Before
@@ -106,7 +106,7 @@ public class HBaseDynamicTest extends HBaseTests
   public void testRead() throws SecurityException, NoSuchMethodException
     {
 
-    Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme(new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
+    Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme( new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
     Tap sink = new Lfs( new TextLine( new Fields( "line" ) ), "build/test/hbasedynamicread", SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "hbasedynamicschemepipe" );
@@ -159,41 +159,18 @@ public class HBaseDynamicTest extends HBaseTests
       new File( "build/test/hbasedynamicreadfiltered/part-00000" ) );
     }
 
-  static private boolean isSameValue( String row, String cf, String column, String value, int size, TupleEntry entry )
-    {
-    if( !entry.getString( 0 ).equals( row ) )
-      return false;
-
-    NavigableMap<byte[], NavigableMap<byte[], byte[]>> mapmap = (NavigableMap<byte[], NavigableMap<byte[], byte[]>>) entry.getObject( 1 );
-
-    if( !mapmap.containsKey( Bytes.toBytes( cf ) ) )
-      return false;
-
-    NavigableMap<byte[], byte[]> map = mapmap.get( Bytes.toBytes( cf ) );
-
-    if( map.size() != size )
-      return false;
-
-    if( !map.containsKey( Bytes.toBytes( column ) ) )
-      return false;
-
-    byte[] mapValue = map.get( Bytes.toBytes( column ) );
-
-    return Arrays.equals( mapValue, Bytes.toBytes( value ) );
-    }
-
   @Test
   public void writeTest() throws IOException, SecurityException, NoSuchMethodException
     {
     Tap source = new Lfs( new TextLine( new Fields( "line" ) ), inputDataFile );
 
     Pipe parsePipe = new Each( "insert",
-        new RegexSplitter( new Fields( "num", "lower", "upper" ), " " ) );
+      new RegexSplitter( new Fields( "num", "lower", "upper" ), " " ) );
     parsePipe = new Each( parsePipe, new Insert( new Fields( "cf" ), "cf" ),
       Fields.ALL );
     parsePipe = new GroupBy( parsePipe, new Fields( "num" ) );
     parsePipe = new Every( parsePipe, new HBaseTuplesToMap( new Fields( "key", "value" ), new Fields( "cf" ), new Fields( "num" ),
-      new Fields("lower" ), new Fields( "upper" ) ) );
+      new Fields( "lower" ), new Fields( "upper" ) ) );
 
     Tap hBaseTap = new HBaseTap( "multitable", new HBaseDynamicScheme( new Fields( "key" ), new Fields( "value" ), "cf" ), SinkMode.REPLACE );
 
@@ -210,5 +187,28 @@ public class HBaseDynamicTest extends HBaseTests
 
     iterator.close();
 
+    }
+
+  static public class StringAppender extends BaseOperation<Void> implements Function<Void>
+    {
+
+    public StringAppender( Fields declaredFields )
+      {
+      super( declaredFields );
+      }
+
+    @Override
+    public void operate( FlowProcess flowProcess, FunctionCall<Void> functionCall )
+      {
+      StringBuffer stringBuffer = new StringBuffer();
+      for( int i = 0; i < functionCall.getArgumentFields().size(); i++ )
+        {
+        stringBuffer.append( functionCall.getArgumentFields().get( i ).toString() ).
+          append( ":" ).append( functionCall.getArguments().getString( functionCall.getArgumentFields().get( i ) ) ).append( " " );
+        }
+
+      functionCall.getOutputCollector().add( new Tuple( stringBuffer.toString() ) );
+
+      }
     }
   }
