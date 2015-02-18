@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.util.HadoopUtil;
+import cascading.hbase.helper.FlowConnectorFactory;
 import cascading.property.AppProps;
 import cascading.util.Util;
 import com.google.common.collect.Maps;
@@ -91,11 +92,7 @@ public abstract class HBaseTests
 
   private FlowConnector newFlowConnector( Map<Object, Object> properties)
     {
-    if( HadoopUtil.isYARN( new JobConf( configuration ) ) )
-      return (FlowConnector) Util.newInstance( "cascading.flow.hadoop2.Hadoop2MR1FlowConnector", properties );
-
-    return (FlowConnector) Util.newInstance( "cascading.flow.hadoop.HadoopFlowConnector", properties );
+    return FlowConnectorFactory.createFlowConnector( properties );
     }
-
 
   }
