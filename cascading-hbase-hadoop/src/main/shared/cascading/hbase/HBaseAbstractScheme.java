@@ -6,6 +6,7 @@ import cascading.flow.FlowProcess;
 import cascading.hbase.helper.TableInputFormat;
 import cascading.scheme.Scheme;
 import cascading.scheme.SourceCall;
+import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -39,6 +40,7 @@ public abstract class HBaseAbstractScheme extends Scheme<Configuration, RecordRe
 
   protected void setSourceInitFields( Configuration conf, String columns )
     {
+    conf.set( "mapred.mapper.new-api", "false");
     conf.set( "mapred.input.format.class", TableInputFormat.class.getName() );
     conf.set( TableInputFormat.SCAN_COLUMNS, columns );
     }
@@ -46,8 +48,12 @@ public abstract class HBaseAbstractScheme extends Scheme<Configuration, RecordRe
   protected void setSinkInitFields( Configuration conf )
     {
     conf.set( "mapred.output.format.class", TableOutputFormat.class.getName() );
+
     conf.set( "mapred.mapoutput.key.class", ImmutableBytesWritable.class.getName() );
     conf.set( "mapred.mapoutput.value.class", Put.class.getName() );
+
+    conf.set( "mapred.mapper.new-api", "false");
+    conf.set( "mapred.reducer.new-api", "false");
     }
 
   protected Tuple sourceGetTuple( Object key )
@@ -84,4 +90,5 @@ public abstract class HBaseAbstractScheme extends Scheme<Configuration, RecordRe
     {
     sourceCall.setContext( null );
     }
+
   }

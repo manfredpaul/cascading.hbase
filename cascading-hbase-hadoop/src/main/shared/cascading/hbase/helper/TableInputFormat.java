@@ -44,8 +44,7 @@ import org.apache.hadoop.util.StringUtils;
 /**
  * Convert HBase tabular data into a format that is consumable by Map/Reduce.
  */
-public class TableInputFormat extends TableInputFormatBase implements
-  JobConfigurable
+public class TableInputFormat extends TableInputFormatBase implements JobConfigurable
   {
   /**
    * space delimited list of columns

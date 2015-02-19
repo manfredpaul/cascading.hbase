@@ -39,7 +39,9 @@ import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
 import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.mortbay.log.Log;
 
@@ -55,8 +57,10 @@ public class HBaseDynamicTest extends HBaseTests
 
   private static final String inputDataFile = "src/test/shared-resources/data/small.txt";
 
-  private static void fillTable( Configuration configuration )
-    throws IOException
+  @Rule
+  public TestName name= new TestName();
+
+  private static void fillTable( Configuration configuration ) throws IOException
     {
     deleteTable( configuration, TEST_TABLE );
 
@@ -107,7 +111,7 @@ public class HBaseDynamicTest extends HBaseTests
     {
 
     Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme( new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
-    Tap sink = new Lfs( new TextLine( new Fields( "line" ) ), "build/test/hbasedynamicread", SinkMode.REPLACE );
+    Tap sink = new Lfs( new TextLine( new Fields( "line" ) ), getOutputDir(), SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "hbasedynamicschemepipe" );
 
@@ -120,9 +124,8 @@ public class HBaseDynamicTest extends HBaseTests
 
     flow.complete();
 
-    FileAssert.assertBinaryEquals( new File(
-      "src/test/shared-resources/data/fileDynamicExpected" ), new File(
-      "build/test/hbasedynamicread/part-00000" ) );
+    FileAssert.assertBinaryEquals( new File( "src/test/shared-resources/data/fileDynamicExpected" ),
+     openResultFile() );
 
     }
 
@@ -142,7 +145,7 @@ public class HBaseDynamicTest extends HBaseTests
     FlowConnector conn = createHadoopFlowConnector( properties );
     Tap source = new HBaseTap( TEST_TABLE, new HBaseDynamicScheme( new Fields( "row" ), new Fields( "value" ), TEST_CF ) );
 
-    Tap sink = new Lfs( new TextLine( new Fields( "line" ) ), "build/test/hbasedynamicreadfiltered", SinkMode.REPLACE );
+    Tap sink = new Lfs( new TextLine( new Fields( "line" ) ), getOutputDir(), SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "hbasedynamicschemepipe" );
 
@@ -156,7 +159,7 @@ public class HBaseDynamicTest extends HBaseTests
     flow.complete();
 
     FileAssert.assertBinaryEquals( new File( "src/test/shared-resources/data/fileDynamicFilterExpected" ),
-      new File( "build/test/hbasedynamicreadfiltered/part-00000" ) );
+     openResultFile() );
     }
 
   @Test
@@ -191,7 +194,6 @@ public class HBaseDynamicTest extends HBaseTests
 
   static public class StringAppender extends BaseOperation<Void> implements Function<Void>
     {
-
     public StringAppender( Fields declaredFields )
       {
       super( declaredFields );
@@ -206,9 +208,26 @@ public class HBaseDynamicTest extends HBaseTests
         stringBuffer.append( functionCall.getArgumentFields().get( i ).toString() ).
           append( ":" ).append( functionCall.getArguments().getString( functionCall.getArgumentFields().get( i ) ) ).append( " " );
         }
-
       functionCall.getOutputCollector().add( new Tuple( stringBuffer.toString() ) );
 
       }
     }
+
+  private File openResultFile( )
+    {
+    String [] paths = new File( getOutputDir() ).list();
+    for ( String path: paths)
+      {
+      if( path.matches( "^part-.*" ) )
+        return new File( getOutputDir() + "/" + path );
+      }
+    throw new IllegalStateException( "could not find output file" );
+    }
+
+
+  private String getOutputDir()
+    {
+    return "build/test/" + name.getMethodName();
+    }
+
   }

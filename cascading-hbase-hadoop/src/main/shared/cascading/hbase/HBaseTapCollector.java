@@ -22,7 +22,6 @@ import java.io.IOException;
 
 import cascading.CascadingException;
 import cascading.flow.FlowProcess;
-import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.tap.Tap;
 import cascading.tap.TapException;
 import cascading.tuple.TupleEntrySchemeCollector;
@@ -124,12 +123,8 @@ public class HBaseTapCollector extends TupleEntrySchemeCollector implements Outp
    * @param writable           of type Writable
    * @throws IOException when
    */
-  public void collect( Object writableComparable, Object writable )
-    throws IOException
+  public void collect( Object writableComparable, Object writable ) throws IOException
     {
-    if( flowProcess instanceof HadoopFlowProcess )
-      ( (HadoopFlowProcess) flowProcess ).getReporter().progress();
-
     writer.write( writableComparable, writable );
     }
   }

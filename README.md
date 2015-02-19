@@ -1,70 +1,62 @@
 # Welcome #
 
- This is the Cascading.HBase module.
+This is the Cascading.HBase module.
 
- It provides support for reading/writing data to/from an HBase
- cluster when bound to a Cascading data processing flow.
+It provides support for reading/writing data to/from an HBase cluster when bound to a Cascading data processing flow.
 
- Cascading is a feature rich API for defining and executing complex,
- scale-free, and fault tolerant data processing workflows on a Hadoop
- cluster. It can be found at the following location:
+Cascading is a feature rich API for defining and executing complex, scale-free, and fault tolerant data processing
+workflows on a Hadoop cluster. It can be found at the following location:
 
-   http://www.cascading.org/
+  http://www.cascading.org/
 
- HBase is the Hadoop database. Its an open-source, distributed,
- column-oriented store modeled after the Google paper on Bigtable.
+HBase is the Hadoop database. Its an open-source, distributed, column-oriented store modeled after the Google paper on
+Bigtable.
 
-   http://hbase.apache.org/
+  http://hbase.apache.org/
 
 # History #
 
- This version has roots from the original Cascading.HBase effort by Chris
- Wensel, and then modified by Kurt Harriger to add the dynamic scheme, putting
- tuple fields into HBase columns, and vice versa.  Twitter's Maple project also
- has roots from the original Cascading.HBase project, but is an update to
- Cascading 2.0.  Maple lacks the dynamic scheme, so this project basically
- combines everything before it and updates to Cascading 2.2.x and HBase 0.94.x.
- It also adds support for lingual.
+This version has roots from the original Cascading.HBase effort by Chris Wensel, and then modified by Kurt Harriger to
+add the dynamic scheme, putting tuple fields into HBase columns, and vice versa.  Twitter's Maple project also has
+roots from the original Cascading.HBase project, but is an update to Cascading 2.0.  Maple lacks the dynamic scheme, so
+this project basically combines everything before it and updates to Cascading 2.2.x and HBase 0.94.x.  It also adds
+support for lingual.
 
 # Building #
 
- This version could be built by using gradle:
+This version could be built by using gradle:
 
-     > gradle build
+    > gradle build
 
-If the tests are failing on your machine, do a `umask 022` before starting the
-build.
+If the tests are failing on your machine, do a `umask 022` before starting the build.
 
 # Using #
 
-## Hadoop 1 vs. Hadoop 2
+## Hadoop 1 vs. Hadoop 2 vs. Tez
 
-HBase provides two sets of dependencies since version 0.96, to work with the two
-different major version os hadoop. This builds supports both versions and
-creates two sets of jars.
+HBase provides two sets of dependencies since version 0.96, to work with the two different major version os hadoop. This
+builds supports both versions and creates two sets of jars.
 
-If you are using a Hadoop distribution based on Apache Hadoop 1.x, you have to
-use `cascading:cascading-hbase-hadoop:2.6.0-*`. If you are using a Hadoop 2.x
-based distribution, you have to use
-`cascading:cascading-hbase-hadoop2-mr1:2.6.0-+` as a dependency.
+If you are using a Hadoop distribution based on Apache Hadoop 1.x, you have to use
+`cascading:cascading-hbase-hadoop:3.0.0-*`. If you are using a Hadoop 2.x based distribution, you have to use
+`cascading:cascading-hbase-hadoop2-mr1:3.0.0-+` as a dependency. If you use a Hadoop 2.x distribution with Apache Tez,
+you have to use `cascading:cascading-hbase-hadoop2-tez:3.0.0-+` 
 
 ## In cascading applications ##
 
-Add the correct jar for your distribution to the classpath with your build tool
-of choice.
+Add the correct jar for your distribution to the classpath with your build tool of choice.
 
 All jars are deployed on [conjars](http://conjars.org/).
 
-See the `HBaseDynamicTest` and `HBaseStaticTest` unit tests for sample code on
-using the HBase taps, schemes and helpers in your Cascading application.
+See the `HBaseDynamicTest` and `HBaseStaticTest` unit tests for sample code on using the HBase taps, schemes and helpers
+in your Cascading application.
 
 ## In lingual ##
 
-This project also creates a lingual compliant provider jars, which can be used
-to talk to HBase via standard SQL. Below you can find a possible session with
-lingual and HBase.
+This project also creates a lingual compliant provider jars, which can be used to talk to HBase via standard SQL. Below
+you can find a possible session with lingual and HBase.
 
-    # the hbase provider can only be used with the hadoop or hadoop2-mr1 platform
+    # the hbase provider can be used with the hadoop or hadoop2-mr1 or hadoop2-tez platform
     > export LINGUAL_PLATFORM=hadoop
 
     # tell lingual, where the namenode, the jobtracker and the hbase zk quorum are
@@ -73,9 +65,11 @@ lingual and HBase.
 
 First we install the provider, by downloading it from conjars.
 
-    > lingual catalog --provider --add cascading:cascading-hbase-hadoop:2.6.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop:3.0.0-+:provider
 or
-    > lingual catalog --provider --add cascading:cascading-hbase-hadoop2-mr1:2.6.0-+:provider
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop2-mr1:3.0.0-+:provider
+or
+    > lingual catalog --provider --add cascading:cascading-hbase-hadoop2-tez:3.0.0-+:provider
 
 Next we are creating a new schema called `working` to work with.
 
@@ -131,35 +125,27 @@ Now we can talk to the HBase table from lingual:
 
 ### Limitations ###
 
-As explained above only qualifiers from one column family can be mapped to the
-same table in lingual. You can still map multiple column families in the same
-HBase table to multiple tables in lingual.
+As explained above only qualifiers from one column family can be mapped to the same table in lingual. You can still map
+multiple column families in the same HBase table to multiple tables in lingual.
 
-Next to that, there is currently a limitation related to the casing of the
-qualifiers in a column family. Since lingual uses SQL semantics for column
-names, it tries to normalize them and uses upper case names. You can use
-lowercase names as well, but you might run into problems, when you do a
-`select * from table` style query. This limitation might be removed in future versions
-of lingual and therefore in the HBase provider.  The easiest way to work around
-this limitation is using uppercase qualifiers.
+Next to that, there is currently a limitation related to the casing of the qualifiers in a column family. Since lingual
+uses SQL semantics for column names, it tries to normalize them and uses upper case names. You can use lowercase names
+as well, but you might run into problems, when you do a `select * from table` style query. This limitation might be
+removed in future versions of lingual and therefore in the HBase provider.  The easiest way to work around this
+limitation is using uppercase qualifiers.
 
-Last but not least keep in mind that this provider gives you a SQL interface to
-HBase, but this interface is not meant for realtime queries. In the spirit of
-lingual it is meant as a SQL driven way for batch processing.
+Last but not least keep in mind that this provider gives you a SQL interface to HBase, but this interface is not meant
+for realtime queries. In the spirit of lingual it is meant as a SQL driven way for batch processing.
 
 ### Types, Lingual, and HBase
 
-The lingual provider takes a pragmatic approach to types, when it reads and
-writes to HBase. Since HBase has no type enforcement and there is no reliable
-way to guess the types, the provider converts every field to a `String` before
-storing it. The type conversion is done via the types on the Fields instance.
-If the type is a `CoercibleType`, the coerce method is called.  When the data is
-read back, the is converted to its canonical representation, before it handed
-back to lingual. This makes sure that data written from lingual can be read back
-in lingual.
+The lingual provider takes a pragmatic approach to types, when it reads and writes to HBase. Since HBase has no type
+enforcement and there is no reliable way to guess the types, the provider converts every field to a `String` before
+storing it. The type conversion is done via the types on the Fields instance.  If the type is a `CoercibleType`, the
+coerce method is called.  When the data is read back, the is converted to its canonical representation, before it handed
+back to lingual. This makes sure that data written from lingual can be read back in lingual.
 
-Other systems interacting with the same table need to take his behaviour into
-account.
+Other systems interacting with the same table need to take his behaviour into account.
 
 
 # Acknowledgements #
@@ -177,4 +163,4 @@ The code contains contributions from the following authors:
 - matan
 - Ryan Rawson
 - Soren Macbeth
-
+and others

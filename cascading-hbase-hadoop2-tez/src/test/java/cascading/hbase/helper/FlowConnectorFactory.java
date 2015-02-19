@@ -17,8 +17,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-rootProject.name = 'cascading-hbase'
 
-include 'cascading-hbase-hadoop'
-include 'cascading-hbase-hadoop2-mr1'
-include 'cascading-hbase-hadoop2-tez'
+package cascading.hbase.helper;
+
+import java.util.Map;
+
+import cascading.flow.FlowConnector;
+import cascading.flow.FlowRuntimeProps;
+import cascading.flow.tez.Hadoop2TezFlowConnector;
+
+public class FlowConnectorFactory
+  {
+  public static FlowConnector createFlowConnector( Map<Object, Object> properties )
+    {
+    properties.put( FlowRuntimeProps.GATHER_PARTITIONS, "1" );
+    return new Hadoop2TezFlowConnector( properties );
+    }
+  }

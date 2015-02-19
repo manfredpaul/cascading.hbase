@@ -21,13 +21,13 @@
 package cascading.hbase;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import cascading.flow.FlowConnector;
 import cascading.hbase.helper.FlowConnectorFactory;
 import cascading.property.AppProps;
-import com.google.common.collect.Maps;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseCommonTestingUtility;
 import org.apache.hadoop.hbase.HBaseTestingUtility;
@@ -68,12 +68,13 @@ public abstract class HBaseTests
   @AfterClass
   public static void tearDownAfterClass() throws Exception
     {
-    utility.shutdownMiniCluster();
+    if( utility != null )
+      utility.shutdownMiniCluster();
     }
 
   public FlowConnector createHadoopFlowConnector()
     {
-    return createHadoopFlowConnector( Maps.newHashMap() );
+    return createHadoopFlowConnector( new HashMap<Object, Object>(  ) );
     }
 
   public FlowConnector createHadoopFlowConnector( Map<Object, Object> props )
