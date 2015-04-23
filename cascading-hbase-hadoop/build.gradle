@@ -20,22 +20,17 @@
 
 apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
-ext.hbaseVersion = '0.98.10.1-hadoop1'
+ext.hbaseVersion = '0.98.12-hadoop1'
 ext.hadoopVersion = '1.2.1'
 
 dependencies {
 
-  compile( group: 'org.apache.hbase', name: 'hbase-client', version: hbaseVersion ) {
-    exclude group: 'org.apache.hadoop'
-  }
+  compile( group: 'org.apache.hbase', name: 'hbase-client', version: hbaseVersion )
   compile( group: 'org.apache.hbase', name: 'hbase-server', version: hbaseVersion ) {
-    exclude group: 'org.apache.hadoop'
-  }
-  compile( group: 'org.apache.hbase', name: 'hbase-common', version: hbaseVersion ) {
-    exclude group: 'org.apache.hadoop'
+    transitive = false
   }
   compile( group: 'org.apache.hbase', name: 'hbase-hadoop1-compat', version: hbaseVersion ) {
-    exclude group: 'org.apache.hadoop'
+    transitive = false
   }
 
   compile group: 'xerces', name: 'xercesImpl', version: '2.9.1'
