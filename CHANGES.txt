@@ -1,9 +1,9 @@
-2.0.0 [unreleased]
+3.0.0 [unreleased]
 
 - support for Apache Tez
 - update to Cascading 3.0
 
-2.7.0 [unreleased]
+2.7.0
 
 - update to Cascading 2.7
 
