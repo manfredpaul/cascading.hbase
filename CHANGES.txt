@@ -2,6 +2,7 @@
 
 - update Cascading to 3.1.x
 - update Tez to 0.8.x
+- correctly handle DoNotRetryIOException
 
 3.0.0
 
