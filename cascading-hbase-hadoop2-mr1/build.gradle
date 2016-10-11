@@ -24,8 +24,8 @@ idea {
   pathVariables MODULE_DIR: file( "${rootDir}/cascading-hbase-hadoop" )
 }
 
-ext.hbaseVersion = '0.98.12-hadoop2'
-ext.hadoopVersion = '2.4.1'
+ext.hbaseVersion = '0.98.22-hadoop2'
+ext.hadoopVersion = '2.7.3'
 
 dependencies {
 

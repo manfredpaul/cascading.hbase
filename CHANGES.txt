@@ -1,3 +1,8 @@
+3.1.0 (unreleased)
+
+- update Cascading to 3.1.x
+- update Tez to 0.8.x
+
 3.0.0
 
 - support for Apache Tez

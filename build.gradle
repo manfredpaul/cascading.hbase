@@ -20,7 +20,7 @@
 
 import java.text.SimpleDateFormat
 
-ext.cascadingVersion = '3.0.0'
+ext.cascadingVersion = '3.1.2'
 
 apply from: "etc/properties.gradle"
 apply from: "etc/version.gradle"
@@ -40,7 +40,7 @@ buildscript {
 
   dependencies {
     classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
-    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.2'
   }
 }
 
