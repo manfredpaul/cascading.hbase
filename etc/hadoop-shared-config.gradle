@@ -30,7 +30,7 @@ sourceSets {
       srcDirs += 'src/test/shared'
     }
     resources {
-      srcDirs += 'src/test/shared-ressources'
+      srcDirs += 'src/test/shared-resources'
     }
   }
 }
